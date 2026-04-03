@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.2] - 2026-04-03
+
+- docs: replace stubs with full enterprise docs and master blueprint (8108ef6)
+
+
 ## [v0.1.1] - 2026-04-03
 
 - build(deps): Bump actions/setup-node from 4 to 6 (#2) (b7ca6d7)
