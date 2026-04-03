@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.1.1] - 2026-04-03
+
+- build(deps): Bump actions/setup-node from 4 to 6 (#2) (b7ca6d7)
+- build(deps): Bump actions/checkout from 4 to 6 (#1) (b604b0d)
+
+
 ## [v0.1.0] - 2026-04-03
 
 - chore: add pnpm-lock.yaml for CI cache (d9bed60)
