@@ -1,0 +1,263 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+      dry_run:
+        description: "Dry run (skip tag/push/release)"
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+  discussions: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify readiness
+        run: |
+          echo "--- Checking for uncommitted changes ---"
+          if ! git diff --quiet || ! git diff --staged --quiet; then
+            echo "::error::Uncommitted changes detected"
+            exit 1
+          fi
+          echo "Working tree is clean."
+
+          echo "--- Running tests (if available) ---"
+          if [ -f "package.json" ] && grep -q '"test"' package.json; then
+            pnpm test || true
+          else
+            echo "No test runner detected, skipping."
+          fi
+
+      - name: Determine previous tag
+        id: prev
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "tag=$PREV_TAG" >> "$GITHUB_OUTPUT"
+          echo "Previous tag: $PREV_TAG"
+
+      - name: Check if release is needed
+        id: check
+        run: |
+          PREV_TAG="${{ steps.prev.outputs.tag }}"
+          if [ "$PREV_TAG" = "v0.0.0" ]; then
+            echo "First release — proceeding."
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          COMMIT_COUNT=$(git rev-list "${PREV_TAG}..HEAD" --count)
+          echo "Commits since $PREV_TAG: $COMMIT_COUNT"
+          if [ "$COMMIT_COUNT" -eq 0 ]; then
+            echo "No new commits since last tag. Skipping release."
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decide bump type
+        id: bump
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          MANUAL_BUMP="${{ github.event.inputs.bump || 'auto' }}"
+          PREV_TAG="${{ steps.prev.outputs.tag }}"
+
+          if [ "$MANUAL_BUMP" != "auto" ]; then
+            echo "type=$MANUAL_BUMP" >> "$GITHUB_OUTPUT"
+            echo "Using manual bump: $MANUAL_BUMP"
+            exit 0
+          fi
+
+          COMMITS=$(git log "${PREV_TAG}..HEAD" --pretty=format:"%s" 2>/dev/null || git log --pretty=format:"%s")
+
+          if echo "$COMMITS" | grep -qiE "BREAKING CHANGE|^[a-z]+!:"; then
+            BUMP="major"
+          elif echo "$COMMITS" | grep -qiE "^feat(\(.*\))?:"; then
+            BUMP="minor"
+          else
+            BUMP="patch"
+          fi
+
+          echo "type=$BUMP" >> "$GITHUB_OUTPUT"
+          echo "Auto-detected bump: $BUMP"
+
+      - name: Compute next version
+        id: version
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          PREV_TAG="${{ steps.prev.outputs.tag }}"
+          BUMP="${{ steps.bump.outputs.type }}"
+
+          VERSION="${PREV_TAG#v}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          PATCH=$(echo "$VERSION" | cut -d. -f3)
+
+          case "$BUMP" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+
+          NEXT="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "next=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Next version: $NEXT"
+
+      - name: Update version files
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          NEXT="${{ steps.version.outputs.next }}"
+          VERSION_NUM="${NEXT#v}"
+
+          if [ -f "package.json" ]; then
+            tmp=$(mktemp)
+            jq --arg v "$VERSION_NUM" '.version = $v' package.json > "$tmp" && mv "$tmp" package.json
+            git add package.json
+            echo "Updated package.json to $VERSION_NUM"
+          fi
+
+          echo "$VERSION_NUM" > version.txt
+          git add version.txt
+          echo "Updated version.txt to $VERSION_NUM"
+
+      - name: Generate changelog entry
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          NEXT="${{ steps.version.outputs.next }}"
+          PREV_TAG="${{ steps.prev.outputs.tag }}"
+          DATE=$(date +%Y-%m-%d)
+
+          {
+            echo "## [$NEXT] - $DATE"
+            echo ""
+            if [ "$PREV_TAG" = "v0.0.0" ]; then
+              git log --pretty=format:"- %s (%h)" | head -50
+            else
+              git log "${PREV_TAG}..HEAD" --pretty=format:"- %s (%h)"
+            fi
+            echo ""
+            echo ""
+          } > /tmp/changelog_entry.md
+
+          if [ -f "CHANGELOG.md" ]; then
+            {
+              head -1 CHANGELOG.md
+              echo ""
+              cat /tmp/changelog_entry.md
+              tail -n +2 CHANGELOG.md
+            } > /tmp/changelog_merged.md
+            mv /tmp/changelog_merged.md CHANGELOG.md
+          else
+            {
+              echo "# Changelog"
+              echo ""
+              cat /tmp/changelog_entry.md
+            } > CHANGELOG.md
+          fi
+
+          git add CHANGELOG.md
+          echo "Changelog updated for $NEXT"
+
+      - name: Sync README version references
+        if: steps.check.outputs.needed == 'true'
+        continue-on-error: true
+        run: |
+          NEXT="${{ steps.version.outputs.next }}"
+          PREV_TAG="${{ steps.prev.outputs.tag }}"
+
+          if [ -f "README.md" ] && [ "$PREV_TAG" != "v0.0.0" ]; then
+            sed -i "s/${PREV_TAG}/${NEXT}/g" README.md || true
+            sed -i "s/${PREV_TAG#v}/${NEXT#v}/g" README.md || true
+            git add README.md || true
+            echo "README.md version references updated"
+          fi
+
+      - name: Commit version bump
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          NEXT="${{ steps.version.outputs.next }}"
+          git diff --staged --quiet || git commit -m "chore(release): ${NEXT}"
+
+      - name: Create tag and push
+        if: steps.check.outputs.needed == 'true' && github.event.inputs.dry_run != 'true'
+        run: |
+          NEXT="${{ steps.version.outputs.next }}"
+          git tag -a "$NEXT" -m "Release $NEXT"
+          git push origin HEAD "$NEXT"
+          echo "Pushed tag $NEXT"
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.needed == 'true' && github.event.inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEXT="${{ steps.version.outputs.next }}"
+          gh release create "$NEXT" \
+            --title "intentional-cognition-os $NEXT" \
+            --generate-notes \
+            --latest
+
+      - name: Dry run summary
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          NEXT="${{ steps.version.outputs.next }}"
+          echo "::notice::Dry run complete. Would have released $NEXT"
+
+      - name: Skip summary
+        if: steps.check.outputs.needed != 'true'
+        run: |
+          echo "::notice::No release needed — no new commits since ${{ steps.prev.outputs.tag }}"

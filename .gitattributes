@@ -1,0 +1,40 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Explicitly declare text files
+*.md text diff=markdown
+*.txt text
+*.csv text
+*.json text
+*.yml text
+*.yaml text
+*.xml text
+*.html text diff=html
+*.css text diff=css
+*.js text diff=javascript
+*.ts text diff=javascript
+*.py text diff=python
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Declare binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.tar binary
+
+# Beads merge strategy
+.beads/issues.jsonl merge=beads
+
+# Linguist overrides
+000-docs/* linguist-documentation
