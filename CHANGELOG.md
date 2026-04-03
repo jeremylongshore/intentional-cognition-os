@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.3] - 2026-04-03
+
+- docs: master blueprint V2 rewrite + idea changelog (b8734dc)
+
+
 ## [v0.1.2] - 2026-04-03
 
 - docs: replace stubs with full enterprise docs and master blueprint (8108ef6)
