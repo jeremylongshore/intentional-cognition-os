@@ -1,854 +1,438 @@
-# Intentional Cognition OS — Master Blueprint
+# Intentional Cognition OS — Master Blueprint v2.0
 
 **Author:** Jeremy Longshore — Intent Solutions
 **Date:** 2026-04-02
-**Status:** Brainstorming master blueprint
-**Repo:** `intent-cognition-os`
+**Version:** 2.0.0
+**Repo:** `intentional-cognition-os`
 **Product:** Intentional Cognition OS
 **CLI:** `ico`
-**Shape:** local-first, remote-capable, repo-native cognition system
 
 ---
 
-## 1. Executive Summary
+## 1. Thesis
 
 Intentional Cognition OS is a knowledge operating system.
 
-It is designed to ingest raw source material, compile that material into a maintained semantic knowledge layer, reason over that layer with agent workflows, generate durable artifacts, and strengthen human understanding through recall-aware loops.
+It ingests raw source material, compiles that material into structured semantic knowledge, reasons over that knowledge through agent workflows, renders durable artifacts, and strengthens human understanding through recall-aware loops.
 
-This is not merely:
-- chat with docs
-- a personal wiki generator
-- a note-taking app with AI
-- a generic agent shell
-- "RAG but better"
-
-It is a system where:
-
-- raw files are collected and preserved
-- an LLM compiles those files into structured markdown knowledge
-- hard questions can spawn scoped research workspaces
-- outputs become reports, slides, charts, and other reusable artifacts
-- useful outputs are filed back into the system
-- the system can lint, critique, and improve its own knowledge
-- human learning can be reinforced through recall and retention flows
-
-**One-line thesis:**
 **Compile knowledge for the machine. Distill understanding for the human.**
+
+This is not chat-with-docs, not a wiki generator, not RAG-with-branding, not a generic agent shell. It is a system where raw files become compiled knowledge, hard questions become scoped research operations, and answers become durable assets that compound over time.
 
 ---
 
-## 2. Core Product Thesis
+## 2. Operating Loop
 
-The market already has strong tooling for:
-- coding agents
-- terminal agents
-- document retrieval
-- vector search
-- local AI workflows
-- note apps with AI overlays
+The product is one loop:
 
-That is not the opening.
+```
+ingest → compile → reason → render → refine
+```
 
-The opening is to build a **cognition runtime** where:
+| Stage | What happens | Owner |
+|-------|-------------|-------|
+| **Ingest** | Collect raw sources into corpus storage. Preserve provenance. | Deterministic |
+| **Compile** | Transform sources into structured semantic knowledge. | Probabilistic (model proposes, system stores) |
+| **Reason** | Answer questions or conduct scoped research over compiled knowledge. | Probabilistic |
+| **Render** | Produce durable artifacts — reports, slides, charts, briefings. | Probabilistic |
+| **Refine** | Lint knowledge, test recall, promote useful outputs, improve the base. | Both |
 
-1. source material becomes a mounted and inspectable corpus
-2. that corpus is compiled into semantic memory
-3. questions become structured research operations when needed
-4. outputs become durable assets instead of disposable answers
-5. the system continuously improves both machine-usable memory and human-usable understanding
-
-Intentional Cognition OS should feel less like "ask a bot" and more like "operate a knowledge system."
+This loop is stated once. Everything else in this document is an elaboration of how each stage works, where the boundaries are, and what the system stores.
 
 ---
 
 ## 3. Product Shape
 
-Intentional Cognition OS should exist under one identity across three operating surfaces.
+Three operating surfaces under one identity.
 
-### 3.1 Local mode
+**Local mode.** Runs on a laptop against local files. Personal research vaults, private analysis, sensitive source work. No infrastructure required. This is the primary surface for Phases 1-4.
 
-Runs on a laptop, workstation, or private machine against local files and repos.
+**Remote mode.** Hosted or self-hosted service for teams. Shared corpora, collaborative research, org memory. Planned for Phase 5.
 
-Primary uses:
-- personal research vaults
-- private project knowledge systems
-- markdown-native knowledge repos
-- local-first analysis and artifact generation
-- sensitive or proprietary source work
+**Repo-native mode.** The repository itself is the operating environment. Source-controlled knowledge, auditable outputs, repeatable agent workflows. Works in both local and remote contexts.
 
-### 3.2 Remote mode
-
-Runs as a hosted or self-hosted service for shared team or org use.
-
-Primary uses:
-- shared corpora
-- remote indexing and compilation
-- collaborative research workspaces
-- org memory systems
-- team reports, briefings, and knowledge QA
-
-### 3.3 Repo-native mode
-
-Treats the repo itself as a first-class operating environment.
-
-Primary uses:
-- source-controlled knowledge
-- durable markdown knowledge layers
-- auditable outputs
-- repeatable agent workflows
-- Claude-native repo memory, skills, and automation surfaces
+All three surfaces share the same workspace layout, CLI vocabulary, and architectural layers. The difference is where the data lives and who can access it.
 
 ---
 
-## 4. What the Product Actually Does
+## 4. Differentiators
 
-At a high level, the system performs five core functions:
+### 4.1 Knowledge compilation
 
-### 4.1 Ingest
-Collect source material into raw storage.
+The system does not index content. It compiles it.
 
-### 4.2 Compile
-Transform source material into structured semantic knowledge.
+Compilation produces structured outputs: source summaries, concept pages, topic pages, entity pages, backlinks, contradiction notes, and open-question files. The compiled knowledge layer is the semantic intermediate representation of the corpus — analogous to object code produced from source files.
 
-### 4.3 Reason
-Use agents, retrieval, and tools to answer questions or conduct scoped research.
+### 4.2 Semantic filesystem
 
-### 4.4 Render
-Turn results into durable artifacts such as reports, slides, charts, and study materials.
+Knowledge is mounted and operable, not hidden in a vector blob.
 
-### 4.5 Refine
-Improve the overall system through linting, provenance checks, promotion rules, recall loops, and iterative knowledge enhancement.
+Operations like `mount`, `index`, `compile`, `lint`, `diff`, and `inspect` expose the knowledge layer as a filesystem-like substrate. Users can see what was compiled, from what sources, at what time, and trace any derived output back to its origin.
 
-This loop is the product.
+### 4.3 Episodic research workspaces
 
-**Operating loop:**
-**ingest -> compile -> reason -> render -> refine**
+Hard questions create temporary, scoped task environments.
 
----
+Each research task gets its own workspace with evidence, notes, drafts, critiques, and outputs. Multiple agents can work a single task. When the task completes, durable value is promoted and temporary work is archived.
 
-## 5. Strategic Differentiators
+### 4.4 Recall-aware cognition
 
-### 5.1 Knowledge compilation, not just indexing
+The system supports both machine retrieval and human retention.
 
-The system should not stop at search or retrieval.
+Machine-facing knowledge is optimized for context efficiency, linkage, and structured reuse. Human-facing knowledge is optimized for recall, understanding, and transfer — flashcards, quizzes, spaced repetition, weak-area tracking. These are two distinct output layers from the same compiled base.
 
-It should compile source material into:
-- source summaries
-- concept pages
-- topic pages
-- entity pages
-- backlinks
-- contradiction notes
-- open-question files
-- derived artifacts
+### 4.5 Audit-first operation
 
-The compiled knowledge layer is the semantic intermediate representation of the corpus.
-
-### 5.2 Semantic filesystem, not magic memory
-
-The system should treat knowledge as mounted and operable.
-
-This means:
-- explicit corpus mounts
-- indexing passes
-- inspectable source paths
-- provenance-aware retrieval
-- a clear split between physical files and semantic views
-- filesystem-like operator behavior
-
-Retrieval should feel like an operable substrate, not a hidden blob.
-
-### 5.3 Episodic research workspaces
-
-Hard questions should not always be answered in one pass.
-
-The system should be able to create temporary task-scoped research environments with:
-- evidence folders
-- working notes
-- synthesis drafts
-- skeptical review files
-- final outputs
-
-This allows the system to operate like a research runtime rather than a chat interface.
-
-### 5.4 Recall-aware cognition
-
-The system should support both:
-- machine knowledge
-- human understanding
-
-That means it should eventually generate:
-- recall prompts
-- quizzes
-- flashcards
-- spaced-repetition exports
-- weak-area reports
-
-This moves the system from storage toward learning.
-
-### 5.5 Audit-first operation
-
-The product should be inspectable by default.
-
-Important events should leave traces:
-- task creation
-- retrieval hits
-- source usage
-- promotion decisions
-- policy checks
-- artifact generation
-- eval results
-
-This is essential for trust, debugging, and future product quality.
+Every meaningful event leaves a trace: ingestion, compilation, retrieval hits, task creation, promotion decisions, policy checks, eval results. This is required for trust, debugging, and quality control.
 
 ---
 
-## 6. Layered Architecture
-
-Intentional Cognition OS should be structured as a layered cognition system.
-
-### 6.1 Layer 1 — Raw Corpus Layer
-
-This is the source-of-truth input layer.
-
-Examples:
-- articles
-- PDFs
-- papers
-- datasets
-- images
-- repos
-- notes
-- transcripts
-- clipped web pages
-
-Responsibilities:
-- preserve raw source material
-- preserve source identity and provenance
-- separate raw from derived content
-- support replayable ingestion and re-compilation
-
-### 6.2 Layer 2 — Semantic Knowledge Layer
-
-This is the compiled markdown knowledge layer.
-
-Examples:
-- source summaries
-- concept pages
-- topic pages
-- entity pages
-- relationship notes
-- contradiction files
-- open-question files
-- semantic indexes
-
-Responsibilities:
-- reduce reasoning cost
-- create inspectable semantic structure
-- support retrieval and synthesis
-- accumulate reusable understanding over time
-
-### 6.3 Layer 3 — Episodic Task Layer
-
-This is the temporary task-scoped working memory layer.
-
-Examples:
-- evidence collection folders
-- temporary notes
-- comparisons
-- drafts
-- critiques
-- final task outputs
-
-Responsibilities:
-- support complex question workflows
-- isolate task-specific clutter
-- allow multi-agent collaboration
-- preserve task traces while keeping long-term memory disciplined
-
-### 6.4 Layer 4 — Artifact Layer
-
-This is the durable output layer.
-
-Examples:
-- markdown reports
-- Marp slide decks
-- charts
-- diagrams
-- memos
-- briefings
-- study materials
-- reusable reference docs
-
-Responsibilities:
-- turn answers into assets
-- support cumulative exploration
-- allow results to be filed back into the system
-
-### 6.5 Layer 5 — Recall Layer
-
-This is the human retention and learning layer.
-
-Examples:
-- flashcards
-- quizzes
-- concept explanations
-- spaced repetition decks
-- weak-area reports
-- recall history
-
-Responsibilities:
-- test user understanding
-- identify knowledge weak points
-- adapt future outputs
-- support long-term retention and transfer
-
-### 6.6 Layer 6 — Audit and Policy Layer
-
-This is the deterministic control layer.
-
-Examples:
-- provenance logs
-- task traces
-- policy checks
-- promotion decisions
-- permission events
-- regression evals
-- lint results
-
-Responsibilities:
-- ensure inspectability
-- enforce policy and lifecycle rules
-- support debugging, trust, and replayability
-- keep the system operational rather than magical
-
----
-
-## 7. Mental Model
-
-Intentional Cognition OS is a hybrid of:
-
-- a filesystem
-- a compiler
-- a research environment
-- a report generator
-- a knowledge QA system
-- a memory coach
-
-That sounds broad until reduced to the core loop:
-
-**ingest -> compile -> reason -> render -> test -> refine**
-
-It is one loop expressed across different user intentions.
-
----
-
-## 8. User Experience Model
-
-### 8.1 Ingest flow
-
-The user adds source material:
-- PDFs
-- articles
-- repos
-- screenshots
-- notes
-- transcripts
-- datasets
-
-The system:
-- stores them in raw space
-- records metadata
-- tracks provenance
-- prepares them for compilation
-
-### 8.2 Compile flow
-
-The system:
-- creates source summaries
-- extracts concepts and entities
-- updates topic pages
-- maintains backlinks
-- surfaces contradictions and gaps
-- enriches the semantic knowledge layer
-
-### 8.3 Ask flow
-
-The user asks:
-- explain this concept
-- compare these ideas
-- synthesize the evidence
-- summarize this corpus
-- generate a report
-- find contradictions
-- propose next research questions
-
-For simple questions, the system answers directly against compiled knowledge.
-
-For complex questions, the system creates an episodic research workspace.
-
-### 8.4 Render flow
-
-The system produces:
-- markdown reports
-- slide decks
-- charts
-- briefings
-- notes
-- study materials
-
-### 8.5 Promote flow
-
-The system or user promotes durable value back into long-term knowledge where appropriate.
-
-### 8.6 Refine flow
-
-The system:
-- runs knowledge health checks
-- finds inconsistencies
-- suggests missing links
-- generates recall material
-- improves the structure of future outputs
-
----
-
-## 9. Deterministic vs Probabilistic Boundary
-
-This boundary should be explicit and enforced.
-
-### 9.1 Deterministic responsibilities
-
-These belong to system-owned logic:
-- file storage
-- mount registry
-- task state
-- provenance
-- policy
-- permissions
-- audit logs
-- promotion rules
-- eval execution
-- lifecycle transitions
-
-### 9.2 Probabilistic responsibilities
-
-These belong to model-driven logic:
-- summarization
-- synthesis
-- concept extraction
-- topic drafting
-- contradiction suggestions
-- question decomposition
-- artifact drafting
-- recall item generation
-
-The system should never blur these beyond recognition.
-
-The model can propose.
-The deterministic system should own durable state and control.
-
----
-
-## 10. Knowledge for the Machine vs Knowledge for the Human
-
-These are related but distinct.
-
-### 10.1 Machine-facing knowledge
-
-Optimized for:
-- retrieval
-- compression
-- provenance
-- linkage
-- context efficiency
-- structured reuse
-
-Examples:
-- source summaries
-- semantic indexes
-- concept graph pages
-- citation trails
-
-### 10.2 Human-facing knowledge
-
-Optimized for:
-- recall
-- understanding
-- transfer
-- teaching
-- retention
-- conceptual chunking
-
-Examples:
-- flashcards
-- quizzes
-- study notes
-- simplified topic summaries
-- explanation prompts
-
-Intentional Cognition OS should maintain both layers rather than forcing one format to serve both.
-
----
-
-## 11. Multi-Agent Episodic Research Pattern
-
-For harder problems, the system should support multi-agent task workflows.
-
-### 11.1 Task sequence
-
-1. Create task workspace
-2. Collect relevant evidence
-3. Generate scoped working notes
-4. Assign specialized roles
-5. Run critique and contradiction passes
-6. Produce final artifact
-7. Generate optional recall material
-8. Promote only durable value into long-term memory
-9. Archive or prune temporary work appropriately
-
-### 11.2 Example roles
-
-Possible subagent roles:
-- collector
-- summarizer
-- skeptic
-- contradiction finder
-- integrator
-- artifact builder
-- recall generator
-
-This is how the system evolves from "answer engine" to "research engine."
-
----
-
-## 12. Artifact Philosophy
-
-The system should avoid ephemeral-only outputs.
-
-Important work should result in durable artifacts such as:
-- reports
-- slide decks
-- study sheets
-- charts
-- briefings
-- architecture notes
-- comparison docs
-
-Outputs should be file-based and inspectable.
-
-Useful outputs should be promotable back into the knowledge system under clear rules.
-
-Questions should add up.
-
----
-
-## 13. Recall and Second-Brain Evolution
-
-The long-term opportunity is larger than a wiki.
-
-A true second-brain system should:
-- identify important concepts
-- compress them into useful learning units
-- test what the user actually understands
-- track weak spots over time
-- adapt future summaries and explanations accordingly
-
-This creates a loop where:
-- the machine maintains semantic memory
-- the human strengthens retained understanding
-
-**Extended loop:**
-**ingest -> compile -> reason -> render -> test recall -> refine -> promote**
-
----
-
-## 14. Local Architecture Rough Draft
-
-### 14.1 Core runtime
-
-- TypeScript / Node.js
-- custom `ico` CLI
-- filesystem-first workspace
-- SQLite for deterministic local state
-- JSONL or equivalent task/audit logs
-
-### 14.2 Retrieval
-
-- markdown-first local retrieval layer
-- QMD or equivalent query substrate
-- simple full-text and semantic retrieval
-- avoid overbuilt vector infrastructure early
-
-### 14.3 Workers
-
-- Python for document-heavy or plotting-heavy jobs
-- parsing pipelines
-- report charts
-- future distillation experiments
-
-### 14.4 Outputs
-
-- Markdown first
-- Marp for slides
-- matplotlib for charts
-- optional HTML reports later
-
-### 14.5 Frontend posture
-
-- Obsidian-compatible artifacts
-- optional lightweight local web UI later
-- no hard dependency on any single frontend
-
-### 14.6 Claude-native surfaces
-
-- Claude Code for repo-native development and workflows
-- Agent SDK for programmable runtime/orchestration
-- repo-local Claude memory, agents, skills, and hooks where useful
-
----
-
-## 15. Remote Architecture Rough Draft
-
-### 15.1 API and orchestration
-
-- TypeScript backend
-- custom orchestration layer
-- task/job system
-- remote execution boundaries
-
-### 15.2 Storage
-
-- object storage for raw files and artifacts
-- relational database for state, metadata, policy, audit
-- search/index layer for remote retrieval
-
-### 15.3 Multi-user capabilities
-
-- user and org workspaces
-- shared corpora
-- shared artifacts
-- policy-governed promotion flows
-- per-user recall and retention tracking
-
-### 15.4 Remote-first value
-
-- collaborative research
-- scheduled knowledge health checks
-- remote compilation jobs
-- team memory systems
-- org briefings and artifact pipelines
-
----
-
-## 16. Recommended Workspace Shape
-
-```text
-intent-cognition-os/
-├── 000-docs/
-├── .claude/
-├── cli/
-├── kernel/
-├── compiler/
-├── mounts/
-├── workspace/
-│   ├── raw/
-│   ├── wiki/
-│   ├── tasks/
-│   ├── outputs/
-│   ├── recall/
-│   └── audit/
-├── evals/
-└── apps/
+## 5. Architecture
+
+### 5.1 Six-layer stack
+
+```
+┌─────────────────────────────────────────────┐
+│  L6  Audit & Policy    (deterministic)      │
+├─────────────────────────────────────────────┤
+│  L5  Recall            (human-facing)       │
+├─────────────────────────────────────────────┤
+│  L4  Artifacts         (durable outputs)    │
+├─────────────────────────────────────────────┤
+│  L3  Episodic Tasks    (temporary)          │
+├─────────────────────────────────────────────┤
+│  L2  Semantic Knowledge (compiled)          │
+├─────────────────────────────────────────────┤
+│  L1  Raw Corpus        (source-of-truth)    │
+└─────────────────────────────────────────────┘
 ```
 
-### 16.1 Example workspace detail
+**L1 — Raw Corpus.** Source-of-truth inputs. PDFs, articles, papers, repos, notes, transcripts, datasets. Append-only. Never modified after ingestion. Stored in `workspace/raw/`.
 
-```text
-workspace/
-├── raw/
-│   ├── articles/
-│   ├── papers/
-│   ├── repos/
-│   ├── datasets/
-│   ├── images/
-│   └── notes/
-├── wiki/
-│   ├── sources/
-│   ├── concepts/
-│   ├── entities/
-│   ├── topics/
-│   ├── contradictions/
-│   ├── open-questions/
-│   └── indexes/
-├── tasks/
-│   └── <task-id>/
-│       ├── evidence/
-│       ├── notes/
-│       ├── drafts/
-│       ├── critique/
-│       └── output/
-├── outputs/
-│   ├── reports/
-│   ├── slides/
-│   ├── charts/
-│   ├── diagrams/
-│   └── briefings/
-├── recall/
-│   ├── cards/
-│   ├── decks/
-│   ├── quizzes/
-│   └── retention/
-└── audit/
-    ├── traces/
-    ├── provenance/
-    ├── policy/
-    └── promotions/
-```
+**L2 — Semantic Knowledge.** Compiled markdown derived from L1. Source summaries, concept pages, topic pages, entity pages, backlinks, contradiction notes, open questions, semantic indexes. Recompilable — can be regenerated from L1 at any time. Stored in `workspace/wiki/`.
+
+**L3 — Episodic Tasks.** Temporary scoped workspaces created for complex questions. Each task has evidence, notes, drafts, critiques, and output directories. Created on demand, archived on completion. Stored in `workspace/tasks/<task-id>/`.
+
+**L4 — Artifacts.** Durable rendered outputs. Markdown reports, Marp slides, charts, briefings, study materials. Promotable to L2 under explicit rules. Stored in `workspace/outputs/`.
+
+**L5 — Recall.** Human retention materials. Flashcards, quizzes, spaced repetition decks, weak-area reports. Generated from L2, adapted based on test results. Stored in `workspace/recall/`.
+
+**L6 — Audit & Policy.** Deterministic control layer. Provenance logs, task traces, policy decisions, promotion history, eval results. Append-only. Stored in `workspace/audit/`.
+
+### 5.2 Data classification
+
+Every piece of data in the system has exactly one classification:
+
+| Classification | Definition | Examples | Lifecycle |
+|---------------|-----------|----------|-----------|
+| **Canonical** | Source-of-truth inputs that the system never modifies | Raw corpus files (L1) | Append-only, never mutated |
+| **Compiled** | Derived from canonical sources via compilation | Wiki pages, summaries, concept pages (L2) | Recompilable from L1 |
+| **Ephemeral** | Temporary working data scoped to a task | Evidence folders, drafts, critiques (L3) | Archived or pruned after task completion |
+| **Durable** | Rendered outputs intended for reuse | Reports, slides, briefings (L4) | Permanent unless user deletes |
+| **Adaptive** | Generated from compiled knowledge, modified by feedback | Flashcards, quiz results, retention data (L5) | Updated based on recall performance |
+| **Audit** | System events and policy decisions | Traces, provenance, promotions (L6) | Append-only, never mutated |
+
+### 5.3 Deterministic vs probabilistic boundary
+
+This is the most important architectural constraint.
+
+**Deterministic side** (system-owned logic):
+- File storage and workspace layout
+- Mount registry
+- Task state machine (created → active → completed → archived)
+- Provenance chain (source → compiled → rendered)
+- Policy enforcement
+- Promotion rules
+- Audit log writes
+- Eval execution
+- Lifecycle transitions
+
+**Probabilistic side** (model-driven logic):
+- Summarization
+- Concept extraction
+- Topic synthesis
+- Contradiction detection
+- Question decomposition
+- Artifact drafting
+- Recall item generation
+
+**Rule:** The model proposes content. The deterministic system owns state, provenance, policy, and lifecycle. The model never writes directly to audit, policy, or promotion tables.
 
 ---
 
-## 17. Example CLI Shape
+## 6. The Compiler
+
+The compiler is the core differentiator. It transforms raw corpus into structured semantic knowledge through defined passes.
+
+### 6.1 Compilation passes
+
+| Pass | Input | Output | Description |
+|------|-------|--------|-------------|
+| **Summarize** | Raw source file | Source summary page | Extracts key claims, methods, conclusions, metadata |
+| **Extract** | Source summaries | Concept pages | Identifies discrete concepts, defines them, cites sources |
+| **Synthesize** | Multiple source summaries + concepts | Topic pages | Cross-source synthesis on a named topic |
+| **Link** | All compiled pages | Backlink annotations | Adds bidirectional references between related pages |
+| **Contradict** | Source summaries + topic pages | Contradiction notes | Flags claims that conflict across sources |
+| **Gap** | All compiled knowledge | Open-question files | Identifies referenced-but-undefined concepts, missing evidence |
+
+### 6.2 Compilation triggers
+
+| Trigger | What happens |
+|---------|-------------|
+| `ico compile sources` | Runs Summarize pass on all uncompiled sources |
+| `ico compile topic <name>` | Runs Synthesize + Link for a named topic |
+| `ico compile concepts` | Runs Extract + Link across all summaries |
+| `ico compile all` | Runs all passes in order |
+| Source re-ingested (hash changed) | Marks existing summary stale, queues recompilation |
+| `ico lint knowledge` | Runs Contradict + Gap passes, reports findings |
+
+### 6.3 Staleness model
+
+A compiled page is **stale** when:
+- Any source it was derived from has been re-ingested with a different content hash
+- A new source has been added that matches the page's topic or concepts
+- A dependent page (backlinked) has been recompiled since this page was last compiled
+
+Stale pages are flagged by `ico lint knowledge` and queued for recompilation by `ico compile all`.
+
+---
+
+## 7. Promotion Rules
+
+Promotion is the act of filing a durable output (L4) back into the semantic knowledge layer (L2).
+
+### 7.1 Rules
+
+1. Only artifacts in `workspace/outputs/` are eligible for promotion.
+2. Promotion requires an explicit command: `ico promote <path> --as <type>`.
+3. The `--as` flag specifies the target type: `topic`, `concept`, `entity`, or `reference`.
+4. Promoted content is copied (not moved) to `workspace/wiki/<type>/`.
+5. The promotion event is logged in `workspace/audit/promotions/` with source path, target path, timestamp, and actor (user or system).
+6. Promoted pages enter the normal compilation lifecycle — they can be linked, contradicted, and linted.
+7. Automatic promotion is never allowed. Promotion is always explicit.
+
+### 7.2 Anti-patterns
+
+- Promoting raw task drafts (use only final outputs)
+- Promoting without review (promotion is a quality gate, not a shortcut)
+- Promoting ephemeral evidence (evidence stays in L3, only synthesis goes to L2)
+
+---
+
+## 8. Multi-Agent Research
+
+For complex questions, the system creates a scoped research workspace and assigns agent roles.
+
+### 8.1 Task lifecycle
+
+```
+created → collecting → synthesizing → critiquing → rendering → completed → archived
+```
+
+### 8.2 Agent roles
+
+| Role | Responsibility |
+|------|---------------|
+| **Collector** | Gathers relevant evidence from L2 into `tasks/<id>/evidence/` |
+| **Summarizer** | Distills evidence into working notes in `tasks/<id>/notes/` |
+| **Skeptic** | Challenges conclusions, flags weak evidence, writes `tasks/<id>/critique/` |
+| **Integrator** | Synthesizes final answer from notes + critiques |
+| **Builder** | Renders final artifact (report, slides, etc.) to `tasks/<id>/output/` |
+
+### 8.3 Task completion
+
+When a research task completes:
+1. Final artifact is copied to `workspace/outputs/`
+2. Task workspace is archived (retained but no longer active)
+3. User may promote the artifact to L2 via `ico promote`
+4. Task trace is closed in `workspace/audit/traces/`
+
+---
+
+## 9. Recall Model
+
+The recall layer helps the human retain what the machine compiled.
+
+### 9.1 Machine knowledge vs human knowledge
+
+| Dimension | Machine-facing (L2) | Human-facing (L5) |
+|-----------|--------------------|--------------------|
+| Optimized for | Retrieval, context efficiency, linkage | Recall, understanding, transfer |
+| Format | Structured markdown with frontmatter | Flashcards, quizzes, explanations |
+| Updates | Recompiled from sources | Adapted from test results |
+| Audience | Agents and retrieval pipelines | The user |
+
+### 9.2 Recall operations
+
+| Command | What it does |
+|---------|-------------|
+| `ico recall generate --topic <name>` | Generates flashcards and quiz questions from compiled knowledge on that topic |
+| `ico recall quiz` | Runs an interactive quiz session |
+| `ico recall weak` | Shows concepts with lowest retention scores |
+| `ico recall export --format anki` | Exports to Anki-compatible format |
+
+### 9.3 Feedback loop
+
+Quiz results update retention scores per concept. Low-scoring concepts are:
+- Surfaced by `ico recall weak`
+- Prioritized in future `ico recall generate` runs
+- Optionally flagged for recompilation with simpler language
+
+---
+
+## 10. CLI
 
 ```bash
-ico ingest ./sources
-ico mount ./workspace/raw
-ico compile topic "agent memory"
-ico ask "Compare semantic memory vs episodic task memory"
-ico research "Build a briefing on intent systems"
-ico render report --task latest
-ico render slides --task latest
-ico lint knowledge
-ico recall generate --topic "agent identity"
-ico eval run
+ico init <name>                         # Initialize workspace
+ico ingest <path> [--type TYPE]         # Ingest source material
+ico mount <path> --name NAME            # Register corpus mount
+ico compile sources                     # Compile source summaries
+ico compile topic <name>                # Compile topic page
+ico compile concepts                    # Extract concept pages
+ico compile all                         # Run all compilation passes
+ico ask <question>                      # Query compiled knowledge
+ico research <brief>                    # Create research workspace
+ico render report --task ID|--topic N   # Generate markdown report
+ico render slides --task ID|--topic N   # Generate Marp slides
+ico lint knowledge                      # Run health checks
+ico recall generate --topic <name>      # Generate recall material
+ico recall quiz                         # Run recall quiz
+ico promote <path> --as <type>          # Promote output to L2
+ico status                              # Show workspace state
+ico eval run                            # Run evaluation specs
 ```
 
-This CLI should feel operational and inspectable rather than magical.
+The CLI should feel operational — like running a build system, not chatting with a bot.
 
 ---
 
-## 18. What the Product Is Not
+## 11. Workspace Layout
 
-Intentional Cognition OS should not collapse into:
-- a generic coding agent
-- a giant vector database wrapper
-- an Obsidian-only product
-- a fancy search bar with branding
-- a vague AI memory blob
-- a one-shot research bot with no durable output
-- a shell demo pretending to be an operating system
-
-The metaphor only works if it is made operational:
-- mounts
-- compiler
-- tasks
-- artifacts
-- policy
-- traces
-- evals
-
----
-
-## 19. MVP Definition
-
-The MVP should prove the end-to-end loop, not every future idea.
-
-### 19.1 MVP goal
-
-Prove that raw sources can be transformed into useful semantic memory, queried effectively, rendered into durable artifacts, and improved over time.
-
-### 19.2 MVP capabilities
-
-- ingest markdown, PDF, and basic web-clipped sources
-- preserve provenance and raw/derived separation
-- compile source summaries and simple concept/topic pages
-- answer questions against compiled knowledge
-- generate markdown reports
-- generate Marp slide decks
-- run simple lint/integrity checks
-- file useful outputs back into the workspace
-- show task trace and provenance
-
-### 19.3 MVP non-goals
-
-Defer or keep light:
-- heavy remote infra
-- complex collaboration UX
-- advanced graph visualizations
-- model fine-tuning
-- too many fancy agent modes
-- distributed storage complexity
-- overbuilt memory systems
-
-The MVP should prove the loop, not the whole philosophy at once.
+```text
+intentional-cognition-os/
+├── cli/                    # CLI entry point (ico)
+├── kernel/                 # Core runtime (workspace, state, mounts, provenance)
+├── compiler/               # Knowledge compilation (summarize, extract, link, lint)
+├── workspace/
+│   ├── raw/                # L1: Canonical source material
+│   │   ├── articles/
+│   │   ├── papers/
+│   │   ├── repos/
+│   │   └── notes/
+│   ├── wiki/               # L2: Compiled semantic knowledge
+│   │   ├── sources/        # Per-source summaries
+│   │   ├── concepts/       # Extracted concept pages
+│   │   ├── entities/       # Entity pages
+│   │   ├── topics/         # Topic synthesis pages
+│   │   ├── contradictions/ # Flagged conflicts
+│   │   ├── open-questions/ # Identified gaps
+│   │   └── indexes/        # Semantic indexes
+│   ├── tasks/              # L3: Episodic research workspaces
+│   │   └── <task-id>/
+│   │       ├── evidence/
+│   │       ├── notes/
+│   │       ├── drafts/
+│   │       ├── critique/
+│   │       └── output/
+│   ├── outputs/            # L4: Durable rendered artifacts
+│   │   ├── reports/
+│   │   ├── slides/
+│   │   ├── charts/
+│   │   └── briefings/
+│   ├── recall/             # L5: Human retention materials
+│   │   ├── cards/
+│   │   ├── decks/
+│   │   ├── quizzes/
+│   │   └── retention/
+│   └── audit/              # L6: Deterministic control data
+│       ├── traces/
+│       ├── provenance/
+│       ├── policy/
+│       └── promotions/
+├── mounts/                 # Corpus mount configs
+├── evals/                  # Evaluation specs
+├── apps/                   # Optional web UI (Phase 5+)
+└── 000-docs/               # Enterprise documentation
+```
 
 ---
 
-## 20. Rough Phase Plan
+## 12. Tech Stack
 
-### Phase 1 — Local foundation
-- repo scaffold
-- workspace layout
-- CLI shell
-- SQLite state
-- raw ingest
-- provenance tracking
-- simple ask/render flow
-
-### Phase 2 — Knowledge compiler
-- source summaries
-- concept extraction
-- topic pages
-- backlinks
-- contradiction detection
-- knowledge linting
-
-### Phase 3 — Episodic research
-- task workspaces
-- structured research runs
-- multi-agent role patterns
-- durable report generation
-- promotion rules
-
-### Phase 4 — Recall loop
-- flashcards
-- quizzes
-- retention metadata
-- weak-area feedback loop
-- learning-aware output refinement
-
-### Phase 5 — Remote mode
-- shared workspaces
-- remote jobs
-- auth boundaries
-- team memory workflows
-- hosted artifact pipelines
+| Component | Technology | Rationale |
+|-----------|-----------|-----------|
+| Language | TypeScript, Node.js 22+ | Type safety, Claude SDK native |
+| CLI | Commander.js | Conventional, battle-tested |
+| State | SQLite (better-sqlite3) | Local-first, zero infrastructure |
+| Traces | JSONL | Append-only, greppable |
+| AI | Claude API via @anthropic-ai/sdk | Compilation and reasoning engine |
+| Orchestration | Agent SDK | Multi-agent research (Phase 3) |
+| Retrieval | Full-text search over compiled markdown | Simple first — no vector DB until proven needed |
+| Output | Markdown, Marp, matplotlib | File-based, inspectable |
+| Compatibility | Obsidian-compatible wiki output | No plugin dependency, just standard markdown |
 
 ---
 
-## 21. Naming Guidance
+## 13. What This Is Not
 
-Use one coherent identity everywhere.
-
-- **Product:** Intentional Cognition OS
-- **Repo:** intent-cognition-os
-- **CLI:** `ico`
-- **Internal shorthand:** ICO
-
-This keeps the system legible and avoids branding fragmentation before the product exists.
+Do not let this collapse into:
+- A coding agent (this is a knowledge system, not a code generator)
+- A vector database wrapper (knowledge is compiled markdown, not embeddings)
+- An Obsidian plugin (output is Obsidian-compatible, but the system is independent)
+- A search bar with branding (the value is compilation, not retrieval)
+- An opaque memory blob (everything is inspectable, traceable, file-based)
+- A one-shot research bot (outputs are durable, research compounds)
+- A shell demo pretending to be an OS (the metaphor is only valid if the operations are real: mount, compile, lint, promote, audit)
 
 ---
 
-## 22. Strategic Conclusion
+## 14. MVP
 
-Intentional Cognition OS is a local-first, remote-capable knowledge operating system that ingests raw sources, compiles them into semantic memory, creates scoped research environments for complex questions, produces durable artifacts, and improves both machine reasoning and human understanding over time.
+### 14.1 Goal
 
-The wiki is not the end state.
-The wiki is the compiled intermediate layer.
+Prove the operating loop works end to end on a single user's local machine.
 
-The deeper product is a cognition runtime with a disciplined operating loop:
+### 14.2 Scope
 
-**ingest -> compile -> reason -> render -> test -> refine**
+- Ingest markdown, PDF, and web-clipped sources with provenance
+- Compile source summaries and concept pages
+- Answer questions against compiled knowledge with citations
+- Generate markdown reports
+- Generate Marp slide decks
+- Run basic lint checks (staleness, gaps)
+- File outputs back into workspace
+- Show provenance and task trace
 
-Internal summary:
-**A cognition runtime, not a chat wrapper.**
+### 14.3 Explicitly deferred
+
+- Remote infrastructure
+- Multi-user collaboration
+- Graph visualization
+- Model fine-tuning
+- Vector search
+- Complex agent orchestration beyond single-task research
+
+---
+
+## 15. Phase Plan
+
+| Phase | Name | Scope |
+|-------|------|-------|
+| 1 | **Local Foundation** | Repo scaffold, workspace layout, CLI skeleton, SQLite state, raw ingest, provenance, basic ask/render |
+| 2 | **Knowledge Compiler** | Summarize, Extract, Synthesize, Link, Contradict, Gap passes; knowledge linting |
+| 3 | **Episodic Research** | Task workspaces, multi-agent roles, structured report generation, promotion rules |
+| 4 | **Recall Loop** | Flashcards, quizzes, retention tracking, weak-area feedback, adaptive generation |
+| 5 | **Remote Mode** | Shared workspaces, auth, remote jobs, team memory, hosted artifact pipelines |
+
+---
+
+## 16. Naming
+
+| Surface | Name |
+|---------|------|
+| Product | Intentional Cognition OS |
+| Repo | `intentional-cognition-os` |
+| CLI | `ico` |
+| Shorthand | ICO |
+
+One identity across all surfaces.
