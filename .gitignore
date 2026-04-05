@@ -60,3 +60,8 @@ workspace/audit/
 # ===== Beads =====
 .beads/*.db-shm
 .beads/*.db-wal
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key

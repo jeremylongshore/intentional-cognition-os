@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "intentional_cognition_os",
+  "project_id": "af5baece-38c9-4f61-8132-225c1a33e1d7"
+}
