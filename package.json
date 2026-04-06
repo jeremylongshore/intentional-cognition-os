@@ -5,16 +5,40 @@
   "description": "Local-first, remote-capable knowledge operating system. Compile knowledge for the machine. Distill understanding for the human.",
   "type": "module",
   "packageManager": "pnpm@10.8.1",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
-    "build": "echo 'No build configured yet'",
-    "test": "echo 'No tests configured yet'",
-    "lint": "echo 'No linter configured yet'",
-    "typecheck": "echo 'No typecheck configured yet'"
+    "build": "pnpm -r --workspace-concurrency=1 build",
+    "test": "pnpm -r test",
+    "test:coverage": "vitest run --coverage --config vitest.config.ts",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean"
   },
   "author": "Jeremy Longshore",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/jeremylongshore/intentional-cognition-os.git"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "better-sqlite3"
+    ],
+    "peerDependencyRules": {
+      "allowAny": ["vite"]
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^4.1.2",
+    "eslint": "^10.2.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "globals": "^17.4.0",
+    "typescript-eslint": "^8.58.0",
+    "vitest": "^4.1.2"
   }
 }

@@ -1,0 +1,46 @@
+export {
+  type Source,
+  type Mount,
+  type Compilation,
+  type Task,
+  type TaskStatus,
+  type Promotion,
+  type RecallResult,
+  type TraceEvent,
+  type TraceEnvelope,
+  SourceSchema,
+  MountSchema,
+  CompilationSchema,
+  TaskSchema,
+  TaskStatusSchema,
+  PromotionSchema,
+  RecallResultSchema,
+  TraceEnvelopeSchema,
+} from './schemas.js';
+
+export {
+  type CompiledPageType,
+  type SourceSummaryFrontmatter,
+  type ConceptFrontmatter,
+  type TopicFrontmatter,
+  type EntityFrontmatter,
+  type ContradictionFrontmatter,
+  type OpenQuestionFrontmatter,
+  type EntityType,
+  CompiledPageTypeSchema,
+  SourceSummaryFrontmatterSchema,
+  ConceptFrontmatterSchema,
+  TopicFrontmatterSchema,
+  EntityFrontmatterSchema,
+  ContradictionFrontmatterSchema,
+  OpenQuestionFrontmatterSchema,
+  EntityTypeSchema,
+} from './frontmatter.js';
+
+export {
+  type Result,
+  ok,
+  err,
+  isOk,
+  isErr,
+} from './result.js';
