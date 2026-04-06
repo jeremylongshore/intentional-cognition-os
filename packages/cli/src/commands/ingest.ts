@@ -1,12 +1,350 @@
+/**
+ * `ico ingest <path>` — Ingest a source file into the workspace.
+ *
+ * Copies the file into the appropriate `workspace/raw/<subdir>/` directory,
+ * registers it in SQLite, writes a trace event, and appends an audit log entry.
+ *
+ * @module commands/ingest
+ */
+
+import { copyFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
+import { basename, extname, join, relative } from 'node:path';
+
 import type { Command } from 'commander';
 
-// TODO: implement in E4-B04
+import {
+  appendAuditLog,
+  closeDatabase,
+  computeFileHash,
+  initDatabase,
+  isSourceChanged,
+  registerSource,
+  writeTrace,
+} from '@ico/kernel';
+import type { Source } from '@ico/types';
+
+import { formatError, formatInfo, formatJSON, formatSuccess, formatWarning } from '../lib/output.js';
+import { resolveWorkspace } from '../lib/workspace-resolver.js';
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/** Maximum file sizes in bytes, per type. Matches workspace policy defaults. */
+const SIZE_LIMITS: Record<SourceType, number> = {
+  pdf: 52_428_800,      // 50 MiB
+  markdown: 5_242_880,  // 5 MiB
+  html: 10_485_760,     // 10 MiB
+  text: 5_242_880,      // 5 MiB
+};
+
+/** Maps source type to raw/ subdirectory name. */
+const TYPE_TO_SUBDIR: Record<SourceType, string> = {
+  pdf: 'papers',
+  markdown: 'notes',
+  html: 'articles',
+  text: 'notes',
+};
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type SourceType = 'pdf' | 'markdown' | 'html' | 'text';
+
+export interface IngestOptions {
+  title?: string;
+  author?: string;
+  force?: boolean;
+}
+
+export interface GlobalOptions {
+  json?: boolean;
+  verbose?: boolean;
+  workspace?: string;
+}
+
+export interface IngestResult {
+  id: string;
+  path: string;
+  type: SourceType;
+  hash: string;
+  ingestedAt: string;
+  alreadyIngested?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Pure helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Determine the source type from a file extension.
+ *
+ * @param filePath - Any path; only the extension is examined.
+ * @returns The canonical source type.
+ */
+export function detectSourceType(filePath: string): SourceType {
+  const ext = extname(filePath).toLowerCase();
+  switch (ext) {
+    case '.pdf':
+      return 'pdf';
+    case '.md':
+    case '.mdx':
+      return 'markdown';
+    case '.html':
+    case '.htm':
+      return 'html';
+    default:
+      return 'text';
+  }
+}
+
+/**
+ * Produce a filesystem-safe slug for a filename, preserving the extension.
+ *
+ * Lowercases, replaces spaces/underscores with hyphens, strips everything
+ * except alphanumerics, hyphens, and the lowercased extension.
+ *
+ * @param filename - The original basename (with extension).
+ * @returns A slugified filename.
+ */
+export function slugify(filename: string): string {
+  const ext = extname(filename);
+  const stem = basename(filename, ext);
+  const slug = stem
+    .toLowerCase()
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  return `${slug}${ext.toLowerCase()}`;
+}
+
+// ---------------------------------------------------------------------------
+// Core logic (extracted so tests can call it without spawning a process)
+// ---------------------------------------------------------------------------
+
+/**
+ * Run the full ingest sequence for a single file.
+ *
+ * @param filePath    - Absolute (or cwd-relative) path to the file to ingest.
+ * @param ingestOpts  - Command-specific options (title, author, force).
+ * @param globalOpts  - Global CLI options (json, verbose, workspace).
+ * @returns `{ ok: true, value: IngestResult }` on success (including no-ops),
+ *          or `{ ok: false, error: Error }` on failure.
+ */
+export function runIngest(
+  filePath: string,
+  ingestOpts: IngestOptions,
+  globalOpts: GlobalOptions,
+): { ok: true; value: IngestResult } | { ok: false; error: Error } {
+  // 1. Resolve workspace
+  const wsResolveOpts =
+    globalOpts.workspace !== undefined ? { workspace: globalOpts.workspace } : {};
+  const wsResult = resolveWorkspace(wsResolveOpts);
+  if (!wsResult.ok) {
+    return { ok: false, error: wsResult.error };
+  }
+  const { root: wsRoot, dbPath } = wsResult.value;
+
+  // 2. Validate the file exists and is readable
+  if (!existsSync(filePath)) {
+    return { ok: false, error: new Error(`File not found: ${filePath}`) };
+  }
+
+  let fileSize: number;
+  try {
+    fileSize = statSync(filePath).size;
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e : new Error(String(e)) };
+  }
+
+  // 3. Determine source type
+  const sourceType = detectSourceType(filePath);
+
+  // 4. Enforce size limit (unless --force)
+  if (!ingestOpts.force) {
+    const limit = SIZE_LIMITS[sourceType];
+    if (fileSize > limit) {
+      const mb = (limit / 1_048_576).toFixed(0);
+      return {
+        ok: false,
+        error: new Error(
+          `File exceeds ${mb} MiB size limit for type "${sourceType}". Use --force to override.`,
+        ),
+      };
+    }
+  }
+
+  // 5. Compute content hash
+  const hashResult = computeFileHash(filePath);
+  if (!hashResult.ok) {
+    return { ok: false, error: hashResult.error };
+  }
+  const hash = hashResult.value;
+
+  // 6. Build destination path: workspace/raw/<subdir>/<slug>
+  const subdir = TYPE_TO_SUBDIR[sourceType];
+  const sluggedName = slugify(basename(filePath));
+  const destAbsDir = join(wsRoot, 'raw', subdir);
+  const destAbsPath = join(destAbsDir, sluggedName);
+
+  // 7. Compute relative path from workspace root (used as the canonical path in DB)
+  const relPath = relative(wsRoot, destAbsPath);
+
+  // 8. Open database
+  const dbResult = initDatabase(dbPath);
+  if (!dbResult.ok) {
+    return { ok: false, error: dbResult.error };
+  }
+  const db = dbResult.value;
+
+  try {
+    // 9. Check if already ingested (same relative path + same hash = no-op)
+    const changedResult = isSourceChanged(db, relPath, hash);
+    if (!changedResult.ok) {
+      return { ok: false, error: changedResult.error };
+    }
+
+    if (!changedResult.value) {
+      // Unchanged — look up the existing record for its id/ingestedAt.
+      // registerSource is idempotent on (path, hash) and returns the existing row.
+      const existingResult = registerSource(db, {
+        path: relPath,
+        type: sourceType,
+        hash,
+        ...(ingestOpts.title !== undefined && { title: ingestOpts.title }),
+        ...(ingestOpts.author !== undefined && { author: ingestOpts.author }),
+      });
+
+      if (!existingResult.ok) {
+        return { ok: false, error: existingResult.error };
+      }
+
+      const result: IngestResult = {
+        id: existingResult.value.id,
+        path: relPath,
+        type: sourceType,
+        hash,
+        ingestedAt: existingResult.value.ingested_at,
+        alreadyIngested: true,
+      };
+
+      if (globalOpts.json === true) {
+        process.stdout.write(formatJSON(result) + '\n');
+      } else {
+        process.stdout.write(formatWarning(`Already ingested: ${sluggedName}`) + '\n');
+        process.stdout.write(formatInfo(`  Path:      ${relPath}`) + '\n');
+        process.stdout.write(formatInfo(`  Source ID: ${result.id}`) + '\n');
+      }
+
+      return { ok: true, value: result };
+    }
+
+    // 10. Copy file to destination (create subdir if needed)
+    mkdirSync(destAbsDir, { recursive: true });
+    copyFileSync(filePath, destAbsPath);
+
+    // 11. Register source in SQLite
+    const sourceResult = registerSource(db, {
+      path: relPath,
+      type: sourceType,
+      hash,
+      ...(ingestOpts.title !== undefined && { title: ingestOpts.title }),
+      ...(ingestOpts.author !== undefined && { author: ingestOpts.author }),
+    });
+
+    if (!sourceResult.ok) {
+      return { ok: false, error: sourceResult.error };
+    }
+
+    const source: Source = sourceResult.value;
+
+    // 12. Write trace event
+    writeTrace(db, wsRoot, 'source.ingest', {
+      sourceId: source.id,
+      path: relPath,
+      hash,
+      type: sourceType,
+    });
+
+    // 13. Append audit log (best-effort; non-fatal)
+    appendAuditLog(
+      wsRoot,
+      'source.ingest',
+      `Ingested "${sluggedName}" (${sourceType}) from ${filePath}`,
+    );
+
+    // 14. Emit output
+    const result: IngestResult = {
+      id: source.id,
+      path: relPath,
+      type: sourceType,
+      hash,
+      ingestedAt: source.ingested_at,
+    };
+
+    if (globalOpts.json === true) {
+      process.stdout.write(formatJSON(result) + '\n');
+    } else {
+      printHumanOutput(sluggedName, result);
+    }
+
+    return { ok: true, value: result };
+  } finally {
+    closeDatabase(db);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Human-readable output
+// ---------------------------------------------------------------------------
+
+function printHumanOutput(displayName: string, result: IngestResult): void {
+  process.stdout.write('\n');
+  process.stdout.write(formatSuccess(`Ingested: ${displayName}`) + '\n');
+  process.stdout.write(formatInfo(`  Type:      ${result.type}`) + '\n');
+  process.stdout.write(formatInfo(`  Hash:      sha256:${result.hash.slice(0, 16)}...`) + '\n');
+  process.stdout.write(formatInfo(`  Path:      ${result.path}`) + '\n');
+  process.stdout.write(formatInfo(`  Source ID: ${result.id}`) + '\n');
+  process.stdout.write('\n');
+}
+
+// ---------------------------------------------------------------------------
+// Commander registration
+// ---------------------------------------------------------------------------
+
+/**
+ * Register `ico ingest <path>` on the root Commander program.
+ *
+ * @param program - The root Commander `Command` instance.
+ */
 export function register(program: Command): void {
   program
     .command('ingest <path>')
-    .description('Ingest a source file')
-    .action(() => {
-      console.error('Not yet implemented. See E4-B04: Ingest Command.');
-      process.exit(1);
+    .description('Ingest a source file into the workspace')
+    .option('--title <title>', 'Source title')
+    .option('--author <author>', 'Source author')
+    .option('--force', 'Override size limits')
+    .action((filePath: string, opts: IngestOptions, cmd: Command) => {
+      const globalOpts = cmd.optsWithGlobals<GlobalOptions & IngestOptions>();
+
+      const ingestOpts: IngestOptions = {
+        ...(opts.title !== undefined && { title: opts.title }),
+        ...(opts.author !== undefined && { author: opts.author }),
+        ...(opts.force !== undefined && { force: opts.force }),
+      };
+
+      const global: GlobalOptions = {
+        ...(globalOpts.json !== undefined && { json: globalOpts.json }),
+        ...(globalOpts.verbose !== undefined && { verbose: globalOpts.verbose }),
+        ...(globalOpts.workspace !== undefined && { workspace: globalOpts.workspace }),
+      };
+
+      const result = runIngest(filePath, ingestOpts, global);
+      if (!result.ok) {
+        process.stderr.write(formatError(result.error.message) + '\n');
+        process.exit(1);
+      }
     });
 }

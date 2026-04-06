@@ -18,13 +18,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   closeDatabase,
+  type Database,
   initDatabase,
   initWorkspace,
   writeTrace,
-  type Database,
 } from '@ico/kernel';
 
-import { parseAuditLog, buildTraceRows } from './inspect.js';
+import { buildTraceRows,parseAuditLog } from './inspect.js';
 import { register } from './inspect.js';
 
 // ---------------------------------------------------------------------------

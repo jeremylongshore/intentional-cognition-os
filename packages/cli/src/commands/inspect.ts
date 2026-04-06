@@ -14,8 +14,8 @@ import { join, resolve } from 'node:path';
 
 import type { Command } from 'commander';
 
-import { closeDatabase, initDatabase, readTraces } from '@ico/kernel';
 import type { TraceRecord } from '@ico/kernel';
+import { closeDatabase, initDatabase, readTraces } from '@ico/kernel';
 
 import {
   formatError,
