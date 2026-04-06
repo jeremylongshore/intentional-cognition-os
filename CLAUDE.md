@@ -9,11 +9,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Runtime**: TypeScript, Node.js 22+, pnpm 10.x
 - **CLI**: `ico` (planned)
 - **License**: MIT
-- **Current state**: Pre-implementation — architecture and docs complete, no source code yet
+- **Current state**: Standards frozen (Epic 1 complete). Implementation begins with Epic 2 (Repo Foundation).
 
 ## Current State
 
-This project has extensive documentation and CI/CD but **zero application code**. All `pnpm` scripts are stubs:
+Standards are frozen (Epic 1 complete). No application code exists yet. All `pnpm` scripts are stubs:
 
 ```bash
 pnpm install          # Works — installs (empty) dependencies
@@ -23,7 +23,38 @@ pnpm lint             # Stub — echoes "No linter configured yet"
 pnpm typecheck        # Stub — echoes "No typecheck configured yet"
 ```
 
-The directories listed in the architecture docs (`packages/types/`, `packages/kernel/`, `packages/compiler/`, `packages/cli/`, `evals/`) **do not exist yet**. They will be created during Epic 2 (Repo Foundation).
+The package directories (`packages/types/`, `packages/kernel/`, `packages/compiler/`, `packages/cli/`, `evals/`) **do not exist yet**. They will be created during Epic 2 (Repo Foundation).
+
+## Session Startup
+
+When starting a new session on this repo:
+
+1. Run `bd prime` to load bead context
+2. Check `bd list --status in_progress` for any active work
+3. Read the relevant epic file in `000-docs/epics/` for current scope
+4. Review the standards docs below for conventions before writing code
+5. Use canonical terminology from the glossary (008-AT-GLOS)
+
+## Standards Reference
+
+All standards are frozen for Phase 1. Changes require an `IDEA-CHANGELOG.md` entry.
+
+| Doc | Standards Document | Governs |
+|-----|-------------------|---------|
+| 008 | [Glossary](000-docs/008-AT-GLOS-glossary.md) | Canonical terminology for all docs, code, and prompts |
+| 009 | [Frontmatter Schemas](000-docs/009-AT-FMSC-frontmatter-schemas.md) | YAML frontmatter for all 7 compiled page types |
+| 010 | [Database Schema](000-docs/010-AT-DBSC-database-schema.md) | SQLite DDL, migration strategy, concurrency policy |
+| 011 | [Trace Schema](000-docs/011-AT-TRSC-trace-schema.md) | JSONL event envelope, event types, integrity chain |
+| 012 | [Workspace Policy](000-docs/012-AT-WPOL-workspace-policy.md) | Directory layout, naming, gitignore, symlink rules |
+| 013 | [Coding Standards](000-docs/013-AT-CODE-coding-standards.md) | TypeScript conventions, tsconfig, Result types, SQL safety |
+| 014 | [Bead Conventions](000-docs/014-OD-BEAD-bead-conventions.md) | Bead workflow, naming, labels, definition of done |
+| 015 | [Testing Strategy](000-docs/015-AT-TEST-testing-strategy.md) | Test layers, fixtures, coverage targets, eval decision tree |
+| 016 | [CI/CD Pipeline Spec](000-docs/016-OD-CICD-pipeline-spec.md) | CI job definitions, build order, release workflow |
+| 017 | [Prompt Templates](000-docs/017-AT-PRMP-prompt-templates.md) | Claude API prompt structure for all 6 compiler passes |
+| 018 | [Promotion Rules](000-docs/018-AT-PROM-promotion-spec.md) | L4→L2 promotion logic, eligibility, audit trail |
+| 019 | [ADR/AAR Templates](000-docs/019-OD-TMPL-adr-aar-templates.md) | Architecture Decision Record and After-Action Review formats |
+| 020 | [Diagram Prompts](000-docs/020-AT-DIAG-diagram-prompts.md) | Mermaid diagram prompts for 6 architectural views |
+| 021 | [Security & Scope](000-docs/021-AT-SECV-security-and-scope.md) | Injection defense, redaction, path safety, v1 deferrals |
 
 ## Planned Tech Stack (from 000-docs/005-AT-SPEC)
 
@@ -79,13 +110,14 @@ For `ico research`, the system creates a scoped episodic task workspace with: co
 
 Detailed specs live in `000-docs/` (doc-filing v4 naming):
 
-- `007-PP-PLAN-master-blueprint.md` — Authoritative design document (start here)
+- `007-PP-PLAN-master-blueprint.md` — **Authoritative design document** (start here)
 - `003-AT-ARCH-architecture.md` — System design, data flow diagrams
 - `005-AT-SPEC-technical-spec.md` — Stack choices, file structure, API contracts
 - `002-PP-PRD-product-requirements.md` — Requirements and user stories
 - `IDEA-CHANGELOG.md` — Design decision log
-- `EXECUTION-PLAN-10-EPICS.md` — 10-epic implementation plan (114 beads)
+- `EXECUTION-PLAN-10-EPICS.md` — 10-epic implementation plan (133 beads)
 - `epics/epic-{01..10}.md` — Individual epic reference docs
+- `008–021` — Standards documents (see Standards Reference above)
 
 ## CI/CD
 
@@ -95,7 +127,7 @@ Detailed specs live in `000-docs/` (doc-filing v4 naming):
 ## Conventions
 
 - Conventional commits: `<type>(<scope>): <subject>` — types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`
-- Branch naming: `feature/`, `fix/`, `docs/`
+- Branch naming: `feat/epic{N}-description`, `fix/`, `docs/`
 - 2-space indentation, LF line endings, UTF-8 (see `.editorconfig`)
 - TypeScript strict mode
 
