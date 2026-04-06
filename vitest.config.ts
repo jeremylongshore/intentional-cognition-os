@@ -41,33 +41,17 @@ export default defineConfig({
       reporter: ['text', 'lcov', 'html'],
       reportsDirectory: './coverage',
       thresholds: {
-        // packages/types — target 100%, currently reporting-only (0)
         'packages/types/src': {
-          statements: 0,
-          branches: 0,
-          functions: 0,
-          lines: 0,
+          statements: 80,
+          branches: 80,
+          functions: 80,
+          lines: 80,
         },
-        // packages/kernel — target 90%, currently reporting-only (0)
         'packages/kernel/src': {
-          statements: 0,
-          branches: 0,
-          functions: 0,
-          lines: 0,
-        },
-        // packages/compiler — target 80%, currently reporting-only (0)
-        'packages/compiler/src': {
-          statements: 0,
-          branches: 0,
-          functions: 0,
-          lines: 0,
-        },
-        // packages/cli — target 70%, currently reporting-only (0)
-        'packages/cli/src': {
-          statements: 0,
-          branches: 0,
-          functions: 0,
-          lines: 0,
+          statements: 80,
+          branches: 70,
+          functions: 80,
+          lines: 80,
         },
       },
     },

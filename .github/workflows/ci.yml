@@ -97,16 +97,18 @@ jobs:
       - name: Audit dependencies
         run: pnpm audit --audit-level=high
 
-      - name: Check for staged .env files
+      - name: Check for committed .env files
         run: |
-          if git diff --cached --name-only | grep -E '^\.env$|^\.env\.' | grep -v '\.env\.example$'; then
-            echo "ERROR: .env file detected in staged changes. Never commit secrets."
+          leaked_files=$(find . -path '*/node_modules' -prune -o -name '.env*' -print | grep -v '.env.example$' || true)
+          if [ -n "$leaked_files" ]; then
+            echo "ERROR: Found committed .env files. Never commit secrets."
+            echo "$leaked_files"
             exit 1
           fi
 
   test:
     name: Test
-    needs: [lint, typecheck]
+    needs: [install]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

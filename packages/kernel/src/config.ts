@@ -38,6 +38,12 @@ export function redactSecrets(obj: Record<string, unknown>): Record<string, unkn
       result[key] = '[REDACTED]';
     } else if (typeof value === 'string' && SECRET_PATTERNS.some(p => p.test(value))) {
       result[key] = '[REDACTED]';
+    } else if (Array.isArray(value)) {
+      result[key] = value.map(item =>
+        typeof item === 'object' && item !== null
+          ? redactSecrets(item as Record<string, unknown>)
+          : item
+      );
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       result[key] = redactSecrets(value as Record<string, unknown>);
     } else {
@@ -58,7 +64,13 @@ function loadEnvFile(dir: string): Record<string, string> {
       const eqIndex = trimmed.indexOf('=');
       if (eqIndex === -1) continue;
       const key = trimmed.slice(0, eqIndex).trim();
-      const value = trimmed.slice(eqIndex + 1).trim();
+      let value = trimmed.slice(eqIndex + 1).trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
       vars[key] = value;
     }
     return vars;

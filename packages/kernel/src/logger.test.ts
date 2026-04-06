@@ -78,6 +78,15 @@ describe('Logger', () => {
     expect(args?.[1]).toBe('[REDACTED]');
   });
 
+  it('redacts secrets in object arguments', () => {
+    const logger = createLogger();
+    logger.info('context:', { apiKey: 'sk-ant-api03-secret', user: 'alice' });
+    const args = consoleSpy.info.mock.calls[0];
+    const redacted = args?.[1] as Record<string, unknown>;
+    expect(redacted['apiKey']).toBe('[REDACTED]');
+    expect(redacted['user']).toBe('alice');
+  });
+
   it('includes ISO timestamp in output', () => {
     const logger = createLogger();
     logger.info('test');

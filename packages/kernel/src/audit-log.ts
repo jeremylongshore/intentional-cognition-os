@@ -27,7 +27,9 @@ export function appendAuditLog(
   }
 
   const timestamp = new Date().toISOString();
-  const row = `| ${timestamp} | ${operation} | ${summary} |\n`;
+  const sanitizedOp = operation.replace(/\|/g, '\\|');
+  const sanitizedSummary = summary.replace(/\|/g, '\\|');
+  const row = `| ${timestamp} | ${sanitizedOp} | ${sanitizedSummary} |\n`;
 
   try {
     appendFileSync(logPath, row, 'utf-8');
