@@ -8,3 +8,7 @@ export {
   closeDatabase,
   type Database,
 } from './state.js';
+export { registerMount, listMounts, getMount, getMountByName, removeMount } from './mounts.js';
+export { appendAuditLog } from './audit-log.js';
+export { rebuildWikiIndex } from './wiki-index.js';
+export { writeTrace, readTraces, type TraceRecord } from './traces.js';
