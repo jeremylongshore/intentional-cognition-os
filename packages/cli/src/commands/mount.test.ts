@@ -70,7 +70,7 @@ function runMount(workspacePath: string, args: string[], jsonMode = false): RunR
   const errSpy = vi.spyOn(console, 'error').mockImplementation((...msgs: unknown[]) => {
     stderr += msgs.join(' ') + '\n';
   });
-  const exitSpy = vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null | undefined) => {
+  const exitSpy = vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null  ) => {
     exitCode = typeof code === 'number' ? code : 1;
     throw new Error(`process.exit(${exitCode})`);
   });

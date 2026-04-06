@@ -12,7 +12,7 @@ import { join, resolve } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type InitOptions, type GlobalOptions, runInit } from './init.js';
+import { type GlobalOptions, type InitOptions, runInit } from './init.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -135,30 +135,23 @@ describe('runInit', () => {
   // -------------------------------------------------------------------------
 
   it('writes JSON to stdout when global.json is true', () => {
-    const stdoutMock = vi.mocked(process.stdout.write);
+    const stdoutMock = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     const result = runInit(name, opts(), { json: true });
 
     expect(result.ok).toBe(true);
 
     // Collect all stdout writes and join them
     const written = stdoutMock.mock.calls.map((c) => c[0]).join('');
-    let parsed: Record<string, unknown>;
-    expect(() => {
-      parsed = JSON.parse(written) as Record<string, unknown>;
-    }).not.toThrow();
+    const parsed = JSON.parse(written) as Record<string, unknown>;
 
-    // @ts-expect-error — parsed is assigned inside the expect callback
     expect(parsed['name']).toBe(name);
-    // @ts-expect-error
     expect(typeof parsed['root']).toBe('string');
-    // @ts-expect-error
     expect(typeof parsed['dbPath']).toBe('string');
-    // @ts-expect-error
     expect(typeof parsed['createdAt']).toBe('string');
   });
 
   it('writes human output to stdout when global.json is false', () => {
-    const stdoutMock = vi.mocked(process.stdout.write);
+    const stdoutMock = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     const result = runInit(name, opts(), { json: false });
 
     expect(result.ok).toBe(true);
