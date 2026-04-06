@@ -13,9 +13,9 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { detectSourceType, ingestSource } from './registry.js';
 import { ingestMarkdown } from './markdown.js';
 import { ingestPdf } from './pdf.js';
+import { detectSourceType, ingestSource } from './registry.js';
 import { ingestWebClip } from './web-clip.js';
 
 // ---------------------------------------------------------------------------
