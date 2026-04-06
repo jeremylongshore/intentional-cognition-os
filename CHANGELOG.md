@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.5] - 2026-04-06
+
+- Epic 1: Canonical Design Pack — 14 Standards Documents + Standards Freeze (#3) (e11585e)
+
+
 ## [v0.1.4] - 2026-04-06
 
 - docs: 10-epic execution plan with 117 beads, 6-auditor review, and audit remediation (c731f14)
