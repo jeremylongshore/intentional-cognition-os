@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.6] - 2026-04-06
+
+- build(deps): Bump actions/checkout from 4 to 6 (#5) (3cb176a)
+
+
 ## [v0.1.5] - 2026-04-06
 
 - Epic 1: Canonical Design Pack — 14 Standards Documents + Standards Freeze (#3) (e11585e)
