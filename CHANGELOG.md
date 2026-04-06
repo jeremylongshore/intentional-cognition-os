@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.9] - 2026-04-06
+
+- Epic 6: Knowledge Compiler Core (#7) (bfeae46)
+
+
 ## [v0.1.8] - 2026-04-06
 
 - Epic 5: Ingest Adapters and Source Identity (#6) (1a46491)
