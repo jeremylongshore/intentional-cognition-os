@@ -414,10 +414,11 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
   // 11. stub commands exit 1
   // -------------------------------------------------------------------------
 
-  it('ico compile exits 1 and stderr mentions Epic 6', () => {
-    const result = run(['compile']);
-    expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('Epic 6');
+  it('ico compile --help shows subcommands', () => {
+    const result = run(['compile', '--help']);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain('sources');
+    expect(result.stdout).toContain('all');
   });
 
   it('ico ask exits 1 and stderr mentions Epic 7', () => {

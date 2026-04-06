@@ -9,6 +9,7 @@ import { resolve } from 'node:path';
 
 import type { Command } from 'commander';
 
+import { getTokenUsageSummary, type TokenUsageSummary } from '@ico/compiler';
 import {
   closeDatabase,
   initDatabase,
@@ -65,6 +66,7 @@ export interface StatusData {
   mounts: number;
   tasks: TaskCounts;
   lastOperation: LastOperation | null;
+  compilationTokens: TokenUsageSummary | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -153,6 +155,18 @@ export function renderStatusNormal(data: StatusData): string {
   }
   lines.push('');
 
+  // Compilation token block — only shown when compilations exist
+  if (data.compilationTokens !== null && data.compilationTokens.compilationCount > 0) {
+    const ct = data.compilationTokens;
+    lines.push('');
+    lines.push(formatHeader('Compilation'));
+    lines.push('');
+    lines.push(kv('Total tokens', ct.totalTokens.toLocaleString(), '  '));
+    lines.push(kv('Est. cost', `$${ct.estimatedCost.toFixed(2)}`, '  '));
+    lines.push(kv('Compilations', ct.compilationCount, '  '));
+    lines.push('');
+  }
+
   // Last operation
   if (data.lastOperation !== null) {
     const op = data.lastOperation;
@@ -196,11 +210,15 @@ export function collectStatusData(db: import('@ico/kernel').Database): StatusDat
     lastOperation = { timestamp: t.timestamp, type: t.event_type };
   }
 
+  const tokenResult = getTokenUsageSummary(db);
+  const compilationTokens = tokenResult.ok ? tokenResult.value : null;
+
   return {
     sources: countSources(sourcesResult.value),
     mounts: mountsResult.value.length,
     tasks: countTasks(tasksResult.value),
     lastOperation,
+    compilationTokens,
   };
 }
 

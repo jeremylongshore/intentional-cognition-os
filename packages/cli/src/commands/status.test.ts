@@ -124,6 +124,7 @@ describe('renderStatusNormal', () => {
       archived: 0,
     },
     lastOperation: null,
+    compilationTokens: null,
   };
 
   it('contains "Workspace Status" header', () => {
@@ -274,6 +275,7 @@ describe('collectStatusData', () => {
     expect(json).toHaveProperty('mounts');
     expect(json).toHaveProperty('tasks');
     expect(json).toHaveProperty('lastOperation');
+    expect(json).toHaveProperty('compilationTokens');
 
     const sources = json['sources'] as Record<string, unknown>;
     expect(sources).toHaveProperty('total');
