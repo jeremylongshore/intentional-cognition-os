@@ -7,6 +7,67 @@ Version numbers follow the blueprint version, not the software release.
 
 ## [Unreleased]
 
+### Added
+
+- **10-epic execution plan** — 114 beads decomposed across 10 epics covering the full project from current repo state (zero application code) to v1 trajectory. Epic reference docs created under `000-docs/epics/`. Beads registered in repo-local Beads system with parent-child hierarchy, dependencies, priorities, and labels. Execution plan summary at `000-docs/EXECUTION-PLAN-10-EPICS.md`.
+- **Epic reference docs** — `000-docs/epics/epic-{01..10}.md`, each containing objective, scope, bead list with dependencies and verification criteria, exit criteria, and risks/watch items.
+- **3 additional Epic 1 beads** — Canonical Glossary (E1-B00), ADR/AAR Templates (E1-B13), Architecture Diagram Prompt Pack (E1-B14). Brings Epic 1 from 12 to 15 beads and total from 111 to 114.
+- **Package structure decision** — Adopted `packages/` prefix for pnpm workspace convention (packages/kernel, packages/cli, packages/compiler, packages/types) over root-level directories.
+- **6-auditor plan review** — Architecture, security, risk/dependency, test strategy, product management, and doc consistency audits across all 10 epics. 53 findings (8 critical, 14 high, 19 medium, 12 low) all addressed. 3 new beads added (E1-B15 security+scope, E4-B11 trace inspection, E8-B11 unpromote). ~75 cross-epic bead dependencies wired. Security hardening woven into existing beads. Total beads: 114 → 117.
+- **Entity page compiler pass** — Entity extraction added to E6-B03 (Extract pass) scope. Blueprint lists entity as a compiled page type but had no compiler pass producing it.
+- **Task lifecycle expanded** — 7 states (created, collecting, synthesizing, critiquing, rendering, completed, archived) reconciled across blueprint, tech spec, and E3-B07.
+- **Builder agent role absorbed** — Blueprint Section 8.2 defines 5 agent roles. Epic 9 implements 4 (Collector, Summarizer, Skeptic, Integrator). Builder role fulfilled by piping Integrator output through E8 render pipeline.
+
+### Decision Notes
+
+- Epic 1 (Canonical Design Pack) is the recommended starting point. Every later epic references standards from Epic 1. Beads B00-B07, B13, B14 have no internal dependencies and can be parallelized.
+- The critical path traces the core operating loop: schema → types → state → ingest → compile → search → ask → render → research → release. This is 11 beads deep across all 10 epics.
+- The `packages/` directory structure was chosen over root-level `cli/`, `kernel/`, `compiler/` to follow standard pnpm workspace monorepo conventions. The tech spec's file structure section should be updated in Epic 1 or Epic 2 to match.
+
+## [2.2.0] - 2026-04-05
+
+### Added
+
+- **Three-layer learning model** (Section 5.6) — Defines how the system improves over time at three layers: context (configurable knowledge and instructions), harness (runtime behavior), and model (foundation weights). Each layer has different cost, inspectability, and iteration velocity. This is an architectural principle, not a new subsystem.
+- **Traces as learning substrate** — Made explicit that L6 traces are not just for debugging. They are the shared evidence base for context refinement, harness improvement, and any future model adaptation. Listed the relevant trace types that feed each learning layer.
+- **Adjacent OSS pattern references** — Brief mention of LangGraph, Letta, Langfuse/Opik, Continue, OpenHands, and SOUL.md as ecosystem validation of the three-layer approach. Framed as reference points, not dependencies.
+
+### Changed
+
+- **Project learning stance made explicit** — v1-v2.1 implied the system could improve but never stated how or in what order. v2.2 commits: context learning is first-class now (Phases 1-4), harness learning is trace/eval-driven and deferred (Phase 3+), model adaptation is explicitly not near-term scope.
+- **Governance framing extended** — The existing audit-first and schema-contract principles now connect to the learning model: context updates are governed by the schema contract, harness changes go through code review, model adaptation requires stable evidence, and the control plane is never a learning surface.
+
+### Decision Notes
+
+- Context was chosen as the primary learning layer because it is the cheapest, most inspectable, and fastest to iterate. This matches how the system is already designed — `CLAUDE.md`, frontmatter schemas, and the compiled wiki are all context that shapes agent behavior without code changes.
+- The three-layer framing resolves a latent ambiguity: v2.1 said the system has traces and evals but didn't say what they were *for* beyond debugging. Now the answer is explicit — they feed learning at all three layers, in order of increasing cost and decreasing frequency.
+- The OSS references are deliberately brief. The blueprint should not read as dependent on any of these projects. They validate the architectural direction — durable execution, persistent memory, trace infrastructure, repo-native config, explicit context files — without implying integration.
+- This section does not add new build scope to Phases 1-2. Context learning happens naturally through operator curation. Harness learning requires Phase 3+ trace accumulation before it becomes actionable.
+
+## [2.1.0] - 2026-04-04
+
+### Added
+
+- **Schema & agent contract layer** (Section 5.4) — Promoted from implicit assumption to explicit architecture. The agent operates under a schema contract composed of `CLAUDE.md`, frontmatter conventions, file policies, lifecycle rules, and compilation schemas. The schema is versioned, linted, and evolves with the repo. This is an architectural layer, not documentation.
+- **Operational control files** (Section 5.5) — Added `workspace/wiki/index.md` (compiled knowledge catalog, auto-rebuilt on compilation) and `workspace/audit/log.md` (chronological operation digest). These are plain markdown files for operator visibility — they complement structured audit traces, not replace them.
+- **MVP operating assumptions** (Section 14.2) — Made scale and infrastructure assumptions explicit: tens to low hundreds of source documents, full-text search over compiled markdown, local filesystem + SQLite only, no vector database required. These hold through Phases 1-4.
+
+### Changed
+
+- **Ingest posture** — Changed from implicitly automatable to explicitly human-in-the-loop by default. Default ingest is source-by-source: operator selects, reviews summary output, approves compilation. Batch ingest exists as a later capability, not the primary mode. Reflected in operating loop table, new ingest-posture paragraph (Section 2), and MVP assumptions.
+- **Obsidian role** — Clarified from "Obsidian-compatible output" to a deliberate posture: Obsidian is a preferred local inspection surface (graph view, backlinks, metadata querying are useful), but the architecture is frontend-agnostic and must not depend on Obsidian-specific behavior. Standard markdown with YAML frontmatter is the output contract.
+- **Thesis paragraph** — Added sentence establishing that the agent operates under a schema contract, not freely.
+- **"What This Is Not" section** — Updated Obsidian line to reflect the inspection-surface-not-dependency posture.
+- **MVP scope** — Added schema conformance to lint checks, added `index.md` and `log.md` to deliverables, added "Batch ingest as default mode" to explicitly deferred list.
+- **Workspace layout** — Added `wiki/index.md` and `audit/log.md` to the directory tree.
+
+### Decision Notes
+
+- The schema contract layer was always implicit in how the system was designed to work — `CLAUDE.md` governs agent behavior, frontmatter conventions govern page structure. V2.1 makes this explicit because it is load-bearing architecture, not optional decoration.
+- `index.md` and `log.md` are deliberately plain markdown, not database views or generated dashboards. The operator should be able to `cat` them.
+- Human-in-the-loop ingest is a quality decision, not a technical limitation. The system can batch-process, but the operator should not trust batch output until they have validated single-source output quality on their specific corpus.
+- Obsidian remains the strongest local viewer for this kind of output. The clarification prevents architectural decisions from coupling to it (e.g., relying on Obsidian plugins for features that should be in the core system).
+
 ## [2.0.0] - 2026-04-02
 
 ### Added

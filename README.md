@@ -8,14 +8,14 @@
 
 ## Overview
 
-**Intentional Cognition OS** is a local-first, remote-capable knowledge operating system that ingests raw sources, compiles them into semantic memory, creates scoped research workspaces for complex questions, generates durable artifacts, and improves both machine reasoning and human understanding over time.
+**Intentional Cognition OS** is a local-first, remote-capable knowledge operating system that ingests raw corpus, compiles semantic knowledge, creates episodic task workspaces for complex questions, generates durable artifacts, and improves both machine reasoning and human understanding over time.
 
 A cognition runtime, not a chat wrapper.
 
 ## Core Loop
 
 ```
-ingest → compile → reason → render → test → refine
+ingest → compile → reason → render → refine
 ```
 
 ## Three Modes
@@ -60,7 +60,7 @@ Six-layer cognition stack:
 
 1. **Raw Corpus Layer** — Source-of-truth inputs (PDFs, articles, repos, notes)
 2. **Semantic Knowledge Layer** — Compiled markdown knowledge (summaries, concepts, entities)
-3. **Episodic Task Layer** — Temporary research workspaces for complex questions
+3. **Episodic Task Layer** — Scoped task workspaces for complex questions
 4. **Artifact Layer** — Durable outputs (reports, slides, charts, briefings)
 5. **Recall Layer** — Human learning and retention support (flashcards, quizzes)
 6. **Audit & Policy Layer** — Deterministic control plane (traces, provenance, approvals)
@@ -81,6 +81,8 @@ Project documentation lives in [`000-docs/`](000-docs/):
 | [User Journey](000-docs/004-PP-UJRN-user-journey.md) | Walkthrough & personas |
 | [Technical Spec](000-docs/005-AT-SPEC-technical-spec.md) | Stack, APIs, deployment |
 | [Status](000-docs/006-OD-STAT-status.md) | Current state & roadmap |
+| [Master Blueprint](000-docs/007-PP-PLAN-master-blueprint.md) | Authoritative design document |
+| [Execution Plan](000-docs/EXECUTION-PLAN-10-EPICS.md) | 10-epic implementation plan |
 
 ## Security
 

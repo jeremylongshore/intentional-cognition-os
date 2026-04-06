@@ -1,88 +1,108 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ## Project Overview
 
-**intentional-cognition-os** — Local-first, remote-capable knowledge operating system that ingests raw sources, compiles semantic memory, creates scoped research workspaces, generates durable artifacts, and improves both machine reasoning and human understanding over time.
+**intentional-cognition-os** — Local-first knowledge operating system that ingests raw corpus, compiles semantic knowledge, creates episodic task workspaces, generates durable artifacts, and improves both machine reasoning and human understanding over time.
 
-- **Runtime**: TypeScript, Node.js 22+, pnpm
-- **Repo**: https://github.com/jeremylongshore/intentional-cognition-os
+- **Runtime**: TypeScript, Node.js 22+, pnpm 10.x
+- **CLI**: `ico` (planned)
 - **License**: MIT
-- **Product**: Intentional Cognition OS
-- **CLI**: `ico` or `intent`
+- **Current state**: Pre-implementation — architecture and docs complete, no source code yet
 
-## Core Thesis
+## Current State
 
-Compile knowledge for the machine. Distill understanding for the human.
-
-One loop: `ingest → compile → reason → render → test → refine`
-
-## Six-Layer Architecture
-
-1. **Raw Corpus Layer** — Source-of-truth inputs (PDFs, articles, repos, notes)
-2. **Semantic Knowledge Layer** — Compiled markdown knowledge (summaries, concepts, entities)
-3. **Episodic Task Layer** — Temporary research workspaces for complex questions
-4. **Artifact Layer** — Durable outputs (reports, slides, charts, briefings)
-5. **Recall Layer** — Human learning and retention (flashcards, quizzes, spaced repetition)
-6. **Audit & Policy Layer** — Deterministic control plane (traces, provenance, approvals)
-
-## Deterministic vs Probabilistic Boundary
-
-**Deterministic side** owns: file storage, task state, mount table, provenance, policy, audit, permissions, promotion rules, eval execution.
-
-**Probabilistic side** owns: summarization, synthesis, drafting, contradiction suggestions, question decomposition, recall generation, artifact writing.
-
-## Build & Test
+This project has extensive documentation and CI/CD but **zero application code**. All `pnpm` scripts are stubs:
 
 ```bash
-pnpm install          # Install dependencies
-pnpm build            # Build all packages
-pnpm test             # Run tests
-pnpm lint             # ESLint
-pnpm typecheck        # tsc --noEmit
+pnpm install          # Works — installs (empty) dependencies
+pnpm build            # Stub — echoes "No build configured yet"
+pnpm test             # Stub — echoes "No tests configured yet"
+pnpm lint             # Stub — echoes "No linter configured yet"
+pnpm typecheck        # Stub — echoes "No typecheck configured yet"
 ```
 
-## Workspace Layout
+The directories listed in the architecture docs (`packages/types/`, `packages/kernel/`, `packages/compiler/`, `packages/cli/`, `evals/`) **do not exist yet**. They will be created during Epic 2 (Repo Foundation).
 
-```
-intentional-cognition-os/
-├── 000-docs/           # Enterprise documentation (doc-filing v4)
-├── .github/            # CI/CD, issue templates, PR template
-├── cli/                # CLI entry point (ico/intent)
-├── kernel/             # Core runtime
-├── compiler/           # Knowledge compilation
-├── mounts/             # Corpus mount points
-├── workspace/          # Working data
-│   ├── raw/            # Ingested source material
-│   ├── wiki/           # Compiled semantic knowledge
-│   ├── tasks/          # Episodic research workspaces
-│   ├── outputs/        # Durable artifacts
-│   ├── recall/         # Learning/retention materials
-│   └── audit/          # Traces and policy logs
-├── evals/              # Evaluation specs
-└── apps/               # Optional web UI
-```
+## Planned Tech Stack (from 000-docs/005-AT-SPEC)
+
+| Purpose | Package | Notes |
+|---------|---------|-------|
+| CLI | Commander.js | Entry point at `packages/cli/src/index.ts` |
+| State DB | better-sqlite3 | Local SQLite for deterministic state |
+| AI | @anthropic-ai/sdk | Claude API for compilation/reasoning |
+| Orchestration | claude_agent_sdk | Multi-agent research (Phase 3) |
+| Validation | Zod | Runtime schema checking |
+| Frontmatter | gray-matter | Parsing compiled wiki pages |
+| Testing | Vitest | Test runner |
+| Build | tsup | TypeScript bundling |
+| Linting | ESLint + typescript-eslint | Code quality |
+
+## Architecture
+
+Core loop: `ingest → compile → reason → render → refine`
+
+### Six Layers
+
+| Layer | Storage Path | Mutability |
+|-------|-------------|------------|
+| 1. Raw Corpus — source inputs | `workspace/raw/` | Append-only |
+| 2. Semantic Knowledge — compiled markdown | `workspace/wiki/` | Recompilable |
+| 3. Episodic Tasks — research workspaces | `workspace/tasks/<id>/` | Per-task lifecycle |
+| 4. Artifacts — reports, slides, charts | `workspace/outputs/` | Promotable to L2 |
+| 5. Recall — flashcards, spaced repetition | `workspace/recall/` | Adaptive |
+| 6. Audit & Policy — traces, provenance | `workspace/audit/` | Append-only |
+
+### Deterministic vs Probabilistic Boundary
+
+This is the most important architectural constraint. The model proposes; the deterministic system owns durable state and control. The model never directly writes to audit, policy, or promotion tables.
+
+- **Deterministic** (Kernel + SQLite + JSONL): file storage, mount registry, task state, provenance, policy, permissions, audit, promotion rules, eval execution
+- **Probabilistic** (Compiler + Claude API): summarization, synthesis, concept extraction, contradiction detection, question decomposition, artifact drafting, recall generation
+
+### Planned Components
+
+| Component | Directory | Responsibility |
+|-----------|-----------|---------------|
+| Types | `packages/types/` | Shared TypeScript interfaces and Zod schemas |
+| Kernel | `packages/kernel/` | Workspace management, mount registry, state machine |
+| Compiler | `packages/compiler/` | Knowledge compilation — summarize, extract, link, diff, lint |
+| CLI | `packages/cli/` | Command routing, argument parsing, output formatting |
+| Evals | `evals/` | Evaluation specs for compilation quality |
+
+### Multi-Agent Research Pattern
+
+For `ico research`, the system creates a scoped episodic task workspace with: collector agents → summarizers → skeptics → integrator → renderer → optional recall generation → promote durable value back to L2 → archive workspace.
+
+## Documentation
+
+Detailed specs live in `000-docs/` (doc-filing v4 naming):
+
+- `007-PP-PLAN-master-blueprint.md` — Authoritative design document (start here)
+- `003-AT-ARCH-architecture.md` — System design, data flow diagrams
+- `005-AT-SPEC-technical-spec.md` — Stack choices, file structure, API contracts
+- `002-PP-PRD-product-requirements.md` — Requirements and user stories
+- `IDEA-CHANGELOG.md` — Design decision log
+- `EXECUTION-PLAN-10-EPICS.md` — 10-epic implementation plan (114 beads)
+- `epics/epic-{01..10}.md` — Individual epic reference docs
+
+## CI/CD
+
+- **CI** (`.github/workflows/ci.yml`): Runs lint, typecheck, and test on push/PR to main
+- **Release** (`.github/workflows/release.yml`): Auto-versioning from conventional commits, CHANGELOG generation, GitHub Release creation. Triggers on push to main or manual dispatch with bump type override.
 
 ## Conventions
 
-- Commit messages: `<type>(<scope>): <subject>` (conventional commits)
+- Conventional commits: `<type>(<scope>): <subject>` — types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`
 - Branch naming: `feature/`, `fix/`, `docs/`
-- PR workflow: feature branch → PR → review → merge
-- Doc filing: `000-docs/` with v4 naming convention
-
-## Task Tracking with Beads (bd)
-
-**Beads provides post-compaction recovery.** Run `/beads` at session start.
-
-**Workflow:** `bd update <id> --status in_progress` → work → `bd close <id> --reason "evidence"`
-
-Key commands: `bd prime` (LLM context), `bd ready`, `bd list --status in_progress`, `bd doctor`
+- 2-space indentation, LF line endings, UTF-8 (see `.editorconfig`)
+- TypeScript strict mode
 
 ## Non-Negotiable Principles
 
-1. **Knowledge compilation, not just indexing** — Derive summaries, concepts, backlinks, contradictions
-2. **Semantic filesystem** — Knowledge feels mounted and operable, not hidden in a blob
-3. **Ephemeral research workspaces** — Hard questions get structured working memory
-4. **Recall-aware** — Help the human remember, not just the model retrieve
-5. **Local + remote symmetry** — Same concepts work locally and remotely
-6. **Source integrity** — Raw and derived always separate, provenance always tracked
-7. **Deterministic control plane** — Trust, inspectability, controlled automation
+1. **Compilation, not indexing** — Derive summaries, concepts, backlinks, contradictions from sources
+2. **Semantic filesystem** — Knowledge is mounted and operable, not hidden in a vector blob
+3. **Ephemeral episodic tasks** — Hard questions get structured working memory that gets archived
+4. **Source integrity** — Raw and derived always separate, provenance always tracked
+5. **Deterministic control plane** — The model proposes, the system decides
