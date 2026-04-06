@@ -9,6 +9,7 @@ import { resolve } from 'node:path';
 
 import type { Command } from 'commander';
 
+import { getTokenUsageSummary, type TokenUsageSummary } from '@ico/compiler';
 import {
   closeDatabase,
   initDatabase,
@@ -18,7 +19,6 @@ import {
   readTraces,
 } from '@ico/kernel';
 import type { Source } from '@ico/types';
-import { getTokenUsageSummary, type TokenUsageSummary } from '@ico/compiler';
 
 import {
   dim,

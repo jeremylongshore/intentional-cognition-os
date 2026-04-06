@@ -7,8 +7,8 @@
  * All functions return `Result<T, Error>` where fallible — never throw.
  */
 
-import { ok, err, type Result } from '@ico/types';
 import type { Database } from '@ico/kernel';
+import { err, ok, type Result } from '@ico/types';
 
 // ---------------------------------------------------------------------------
 // Public types

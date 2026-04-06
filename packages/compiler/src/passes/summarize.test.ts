@@ -17,11 +17,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   closeDatabase,
+  type Database,
   getDerivations,
   initDatabase,
   initWorkspace,
   readTraces,
-  type Database,
 } from '@ico/kernel';
 import { ok } from '@ico/types';
 

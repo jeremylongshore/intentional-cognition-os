@@ -24,9 +24,9 @@ import { basename, extname, join } from 'node:path';
 
 import {
   appendAuditLog,
+  type Database,
   recordProvenance,
   writeTrace,
-  type Database,
 } from '@ico/kernel';
 import { err, ok, type Result } from '@ico/types';
 
