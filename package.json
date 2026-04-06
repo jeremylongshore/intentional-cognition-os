@@ -5,11 +5,17 @@
   "description": "Local-first, remote-capable knowledge operating system. Compile knowledge for the machine. Distill understanding for the human.",
   "type": "module",
   "packageManager": "pnpm@10.8.1",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
-    "build": "echo 'No build configured yet'",
-    "test": "echo 'No tests configured yet'",
-    "lint": "echo 'No linter configured yet'",
-    "typecheck": "echo 'No typecheck configured yet'"
+    "build": "pnpm -r --workspace-concurrency=1 build",
+    "test": "pnpm -r test",
+    "test:coverage": "pnpm -r test -- --coverage",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean"
   },
   "author": "Jeremy Longshore",
   "license": "MIT",
