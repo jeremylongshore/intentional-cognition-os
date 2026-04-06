@@ -5,12 +5,12 @@ import { join, resolve } from 'node:path';
 import type { Database } from 'better-sqlite3';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { closeDatabase, initDatabase } from './state.js';
 import {
   createSearchIndex,
   indexCompiledPages,
   searchPages,
 } from './search.js';
+import { closeDatabase, initDatabase } from './state.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
