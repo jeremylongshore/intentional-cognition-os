@@ -13,6 +13,7 @@ import { createInterface } from 'node:readline';
 
 import type { Command } from 'commander';
 
+import { ingestSource } from '@ico/compiler';
 import {
   appendAuditLog,
   closeDatabase,
@@ -22,7 +23,6 @@ import {
   registerSource,
   writeTrace,
 } from '@ico/kernel';
-import { ingestSource } from '@ico/compiler';
 import type { Source } from '@ico/types';
 
 import { formatError, formatInfo, formatJSON, formatSuccess, formatWarning } from '../lib/output.js';
