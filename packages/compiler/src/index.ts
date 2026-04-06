@@ -25,3 +25,16 @@ export {
   type CompletionOptions,
   type CompletionResult,
 } from './api/claude-client.js';
+export {
+  calculateCost,
+  getTokenUsageSummary,
+  formatTokenUsage,
+  type TokenUsageSummary,
+  type ModelPricing,
+  MODEL_PRICING,
+} from './token-tracker.js';
+export {
+  summarizeSource,
+  type SummarizeOptions,
+  type SummarizeResult,
+} from './passes/summarize.js';
