@@ -1,11 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import {
-  SourceSchema,
-  MountSchema,
   CompilationSchema,
-  TaskSchema,
+  MountSchema,
   PromotionSchema,
   RecallResultSchema,
+  SourceSchema,
+  TaskSchema,
   TraceEnvelopeSchema,
 } from './schemas.js';
 

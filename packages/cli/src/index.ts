@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+
 import { version } from '@ico/kernel';
 
 const program = new Command();
