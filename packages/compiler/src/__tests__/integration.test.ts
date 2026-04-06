@@ -31,12 +31,12 @@ import { ok } from '@ico/types';
 
 import type { ClaudeClient } from '../api/claude-client.js';
 import { runIngestPipeline } from '../ingest-pipeline.js';
+import { detectContradictions } from '../passes/contradict.js';
 import { extractConcepts } from '../passes/extract.js';
 import { identifyGaps } from '../passes/gap.js';
 import { addBacklinks } from '../passes/link.js';
 import { summarizeSource } from '../passes/summarize.js';
 import { synthesizeTopics } from '../passes/synthesize.js';
-import { detectContradictions } from '../passes/contradict.js';
 import { detectStalePages, getUncompiledSources } from '../staleness.js';
 import { validateCompiledPage } from '../validation.js';
 
@@ -268,7 +268,7 @@ function createMockClient(summaryPages: string[]): ClaudeClient {
 
   return {
     createCompletion: vi.fn().mockImplementation(
-      async (system: string, _user: string) => {
+      (system: string, _user: string) => {
         // Summarize pass — identified by its unique system prompt phrase.
         if (system.includes('source summary page')) {
           const page = summaryPages[summaryCallCount] ?? summaryPages[summaryPages.length - 1] ?? '';
@@ -348,7 +348,7 @@ function createNoContradictionsClient(summaryPages: string[]): ClaudeClient {
 
   return {
     createCompletion: vi.fn().mockImplementation(
-      async (system: string, _user: string) => {
+      (system: string, _user: string) => {
         if (system.includes('source summary page')) {
           const page = summaryPages[summaryCallCount] ?? summaryPages[summaryPages.length - 1] ?? '';
           summaryCallCount++;
@@ -424,7 +424,7 @@ interface TestEnv {
  * Inserts a minimal source row so FK constraints on `compilations` are satisfied.
  * Returns the inserted source id.
  */
-function insertSource(
+function _insertSource(
   db: Database,
   id: string,
   path: string,
