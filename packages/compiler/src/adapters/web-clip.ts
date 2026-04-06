@@ -16,7 +16,12 @@ import { type IngestResult } from './types.js';
 
 const require = createRequire(import.meta.url);
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const TurndownService = require('turndown') as typeof import('turndown').default;
+// `export =` CommonJS module: `require` returns the constructor directly.
+// Cast via `unknown` to avoid the namespace member error from the @types declaration.
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const TurndownService = require('turndown') as unknown as new (
+  options?: import('turndown').Options,
+) => import('turndown');
 
 // ---------------------------------------------------------------------------
 // Internal helpers
