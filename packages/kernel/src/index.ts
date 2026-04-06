@@ -37,6 +37,9 @@ export { rebuildWikiIndex } from './wiki-index.js';
 // Audit
 export { appendAuditLog } from './audit-log.js';
 
+// Search
+export { createSearchIndex, indexCompiledPages, searchPages, type SearchResult } from './search.js';
+
 // Configuration
 export { loadConfig, redactSecrets, type IcoConfig } from './config.js';
 export { Logger, createLogger } from './logger.js';
