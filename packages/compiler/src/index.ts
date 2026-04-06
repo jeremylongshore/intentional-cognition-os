@@ -6,3 +6,14 @@ export {
   type IngestPipelineOptions,
   type IngestPipelineResult,
 } from './ingest-pipeline.js';
+export {
+  validateCompiledPage,
+  validateFrontmatter,
+  type ValidationResult,
+} from './validation.js';
+export {
+  detectStalePages,
+  markStale,
+  getUncompiledSources,
+  type StalePageInfo,
+} from './staleness.js';
