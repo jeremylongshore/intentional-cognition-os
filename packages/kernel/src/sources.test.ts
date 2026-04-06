@@ -260,7 +260,7 @@ describe('source registry', () => {
     if (!result.ok) return;
 
     expect(result.value.length).toBe(1);
-    expect(result.value[0].path).toBe('mounted/a.md');
+    expect(result.value[0]!.path).toBe('mounted/a.md');
   });
 
   it('returns sources ordered by ingested_at descending', async () => {
@@ -274,8 +274,8 @@ describe('source registry', () => {
     if (!result.ok) return;
 
     // The most recently inserted record should come first.
-    expect(result.value[0].path).toBe('second.md');
-    expect(result.value[1].path).toBe('first.md');
+    expect(result.value[0]!.path).toBe('second.md');
+    expect(result.value[1]!.path).toBe('first.md');
   });
 
   // -------------------------------------------------------------------------

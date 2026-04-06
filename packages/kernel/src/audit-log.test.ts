@@ -62,8 +62,8 @@ describe('appendAuditLog', () => {
     expect(dataRows[1]).toContain('ingest.start');
     expect(dataRows[2]).toContain('ingest.end');
 
-    const ts1 = dataRows[1].split('|')[1].trim();
-    const ts2 = dataRows[2].split('|')[1].trim();
+    const ts1 = dataRows[1]!.split('|')[1]!.trim();
+    const ts2 = dataRows[2]!.split('|')[1]!.trim();
     expect(new Date(ts1).getTime()).toBeLessThanOrEqual(new Date(ts2).getTime());
   });
 
