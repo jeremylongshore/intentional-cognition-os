@@ -21,3 +21,9 @@ export { appendAuditLog } from './audit-log.js';
 export { rebuildWikiIndex } from './wiki-index.js';
 export { writeTrace, readTraces, type TraceRecord } from './traces.js';
 export { createTask, transitionTask, getTask, listTasks, type TaskRecord } from './tasks.js';
+export {
+  recordProvenance,
+  getProvenance,
+  getDerivations,
+  type ProvenanceRecord,
+} from './provenance.js';
