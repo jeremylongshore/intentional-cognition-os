@@ -9,21 +9,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Runtime**: TypeScript, Node.js 22+, pnpm 10.x
 - **CLI**: `ico` (planned)
 - **License**: MIT
-- **Current state**: Standards frozen (Epic 1 complete). Implementation begins with Epic 2 (Repo Foundation).
+- **Current state**: Epic 3 (Kernel Core) complete. Epic 4 (CLI Surface) next.
 
 ## Current State
 
-Standards are frozen (Epic 1 complete). No application code exists yet. All `pnpm` scripts are stubs:
+Epics 1-3 complete. The kernel is fully operational with 147 tests.
 
 ```bash
-pnpm install          # Works — installs (empty) dependencies
-pnpm build            # Stub — echoes "No build configured yet"
-pnpm test             # Stub — echoes "No tests configured yet"
-pnpm lint             # Stub — echoes "No linter configured yet"
-pnpm typecheck        # Stub — echoes "No typecheck configured yet"
+pnpm install          # Install all workspace dependencies
+pnpm build            # Build all packages (tsup)
+pnpm test             # Run all tests (vitest)
+pnpm lint             # Run ESLint across all packages
+pnpm typecheck        # Run tsc --noEmit across all packages
 ```
 
-The package directories (`packages/types/`, `packages/kernel/`, `packages/compiler/`, `packages/cli/`, `evals/`) **do not exist yet**. They will be created during Epic 2 (Repo Foundation).
+### Packages
+
+| Package | Status | Description |
+|---------|--------|-------------|
+| `packages/types/` | Complete | Shared TypeScript interfaces and Zod schemas |
+| `packages/kernel/` | Complete | Workspace management, SQLite state, mounts, sources, provenance, traces, tasks, wiki index, audit log |
+| `packages/compiler/` | Scaffold | Knowledge compilation (Epic 6) |
+| `packages/cli/` | Scaffold | Command routing and output formatting (Epic 4) |
+| `evals/` | Not started | Evaluation specs (Epic 9) |
 
 ## Session Startup
 
