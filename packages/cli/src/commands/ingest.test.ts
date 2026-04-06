@@ -473,7 +473,7 @@ describe('runBatchIngest', () => {
     const dbResult = initDatabase(wsResult.value.dbPath);
     if (!dbResult.ok) throw new Error(`initDatabase failed: ${dbResult.error.message}`);
     db = dbResult.value;
-    closeDatabase(db as Parameters<typeof closeDatabase>[0]);
+    closeDatabase(db);
 
     vi.spyOn(process.stdout, 'write').mockReturnValue(true);
     vi.spyOn(process.stderr, 'write').mockReturnValue(true);
