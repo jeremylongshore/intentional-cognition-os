@@ -46,7 +46,7 @@ pnpm install
 ```bash
 ico ingest ./sources
 ico compile topic "agent memory"
-ico ask "Compare semantic memory vs episodic task memory"
+ico ask "Compare semantic knowledge vs episodic tasks"
 ico research "Build a briefing on ERC-8004 trust signals"
 ico render report --task latest
 ico render slides --task latest
@@ -82,7 +82,8 @@ Project documentation lives in [`000-docs/`](000-docs/):
 | [Technical Spec](000-docs/005-AT-SPEC-technical-spec.md) | Stack, APIs, deployment |
 | [Status](000-docs/006-OD-STAT-status.md) | Current state & roadmap |
 | [Master Blueprint](000-docs/007-PP-PLAN-master-blueprint.md) | Authoritative design document |
-| [Execution Plan](000-docs/EXECUTION-PLAN-10-EPICS.md) | 10-epic implementation plan |
+| [Execution Plan](000-docs/EXECUTION-PLAN-10-EPICS.md) | 10-epic implementation plan (133 beads) |
+| Standards (008–021) | 14 frozen standards documents (see [CLAUDE.md](CLAUDE.md)) |
 
 ## Security
 

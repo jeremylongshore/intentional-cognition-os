@@ -7,7 +7,43 @@ Version numbers follow the blueprint version, not the software release.
 
 ## [Unreleased]
 
+## [Standards Freeze v1] — 2026-04-06
+
 ### Added
+- **Standards Freeze v1** — Epic 1 (Canonical Design Pack) complete. 14 standards documents frozen for Phase 1 (docs 008–021). All cross-references verified. CLAUDE.md updated with Standards Reference section. Any changes to frozen standards require an entry in this changelog and review of all dependent documents.
+
+### Standards Documents Delivered
+- 008-AT-GLOS: Canonical Glossary and Terminology Lock
+- 009-AT-FMSC: Frontmatter Schemas for All 7 Compiled Page Types
+- 010-AT-DBSC: SQLite Schema with Full DDL and Migration Strategy
+- 011-AT-TRSC: JSONL Trace Event Schema and Envelope Format
+- 012-AT-WPOL: Workspace Directory Policy
+- 013-AT-CODE: TypeScript Coding Standards and Package Conventions
+- 014-OD-BEAD: Bead Workflow and Epic Execution Conventions
+- 015-AT-TEST: Testing Strategy and Fixture Workspace Design
+- 016-OD-CICD: CI/CD Pipeline Upgrade Specification
+- 017-AT-PRMP: Prompt Template Standards for Compiler Passes
+- 018-AT-PROM: Promotion Rules and Policy Enforcement Specification
+- 019-OD-TMPL: ADR and AAR Templates
+- 020-AT-DIAG: Architecture Diagram Prompt Pack
+- 021-AT-SECV: v1 Scope Constraints and Security Standards
+
+---
+
+### Added
+
+- **Competitive landscape research** — Validated ICO thesis against 2026 market: Karpathy's "LLM Knowledge Bases" confirms compilation category, "deterministic core + agentic shell" is industry consensus, RAG fatigue drives market toward compilation, EU/CA/CO AI Acts (mid-2026) require audit trails (ICO's L6 is a moat). Competitive matrix shows ICO is the only project with all 8 differentiators (compilation, semantic FS, deterministic control, provenance, multi-agent research, recall, CLI-first, local-first) across Karpathy, qmd, Onyx, Mem0, and Fabric.
+- **qmd integration candidate** — qmd v2.1.0 (April 5, 2026; 18.2K stars) identified as preferred retrieval upgrade path for E7. Hybrid search (BM25 + vector + reranking), fully local, already has MCP server. Six reusable patterns noted: Zod schema as dependency root, `Result<T,E>` error pattern, repository classes over better-sqlite3, policy pipeline (short-circuit on failure), lifecycle state machine with typed transitions, `createTestDatabase()` for in-memory testing.
+- **7 future scenario analyses** — Strategic guidance for: (1) Karpathy open-sourcing his KB (70% Q2-Q3 2026 — positioning pivot to governance), (2) Claude native persistent memory (40% Q3 2026 — ICO is compiled knowledge, not session memory), (3) MCP as universal agent protocol (80%, already happening — kernel API must be MCP-wrappable), (4) vector search becomes mandatory (50% — adapter pattern in E7-B01), (5) AI provenance legally required (90% by Q4 2026 — L6 traces are legal compliance, not debugging), (6) knowledge compiler category gets crowded (30% 2027 — moat is deterministic kernel + provenance chain), (7) model costs drop 10x (60% Q4 2026 — shift from incremental to full recompilation).
+- **8 strategic bead annotations** — Competitive and scenario-derived notes attached to E1-B03 (trace compliance), E1-B04 (Obsidian compat), E1-B15 (MCP + positioning), E3-B11 (MCP-wrappable API), E6-B01 (token-efficient calling), E6-B09 (full recompile mode), E7-B01 (search adapter pattern + qmd), E10-B04 (compliance gate).
+
+### Decision Notes
+
+- ICO's moat ordering: (1) deterministic control plane (hardest to replicate), (2) provenance chain (painful to retrofit), (3) multi-agent research (complex orchestration), (4) recall/retention (nobody else is thinking about this). Compilation itself is reproducible and NOT the moat.
+- Positioning strategy if Karpathy releases: "Karpathy's tool compiles knowledge. ICO governs it." Ship E1-E6 before he releases to be the production-grade version.
+- MCP integration is a v1.1 deliverable, not v1. But the v1 kernel API (E3-B11) must be clean enough to wrap without modification. This is a design constraint on v1, not new scope.
+- Search adapter pattern in E7-B01 is the key architectural decision for extensibility. FTS5 ships as default (zero dependencies). qmd is the upgrade path (proven at 18.2K stars). The interface is the contract, not the implementation.
+- EU AI Act enforcement (August 2026) makes E10-B04 (trace audit) a compliance gate equivalent to the release gate (E10-B11). This is not a quality nice-to-have.
 
 - **10-epic execution plan** — 114 beads decomposed across 10 epics covering the full project from current repo state (zero application code) to v1 trajectory. Epic reference docs created under `000-docs/epics/`. Beads registered in repo-local Beads system with parent-child hierarchy, dependencies, priorities, and labels. Execution plan summary at `000-docs/EXECUTION-PLAN-10-EPICS.md`.
 - **Epic reference docs** — `000-docs/epics/epic-{01..10}.md`, each containing objective, scope, bead list with dependencies and verification criteria, exit criteria, and risks/watch items.

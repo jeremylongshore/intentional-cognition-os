@@ -1,8 +1,8 @@
-# Intentional Cognition OS — Master Blueprint v2.0
+# Intentional Cognition OS — Master Blueprint v2.2
 
 **Author:** Jeremy Longshore — Intent Solutions
-**Date:** 2026-04-02
-**Version:** 2.0.0
+**Date:** 2026-04-05
+**Version:** 2.2.0
 **Repo:** `intentional-cognition-os`
 **Product:** Intentional Cognition OS
 **CLI:** `ico`
@@ -19,6 +19,8 @@ It ingests raw source material, compiles that material into structured semantic 
 
 This is not chat-with-docs, not a wiki generator, not RAG-with-branding, not a generic agent shell. It is a system where raw files become compiled knowledge, hard questions become scoped research operations, and answers become durable assets that compound over time.
 
+The agent does not operate freely. It operates under a schema contract — governed by rules files, frontmatter conventions, file policies, and lifecycle constraints that evolve with the repo and corpus.
+
 ---
 
 ## 2. Operating Loop
@@ -31,13 +33,15 @@ ingest → compile → reason → render → refine
 
 | Stage | What happens | Owner |
 |-------|-------------|-------|
-| **Ingest** | Collect raw sources into corpus storage. Preserve provenance. | Deterministic |
+| **Ingest** | Collect raw sources into corpus storage. Preserve provenance. Source-by-source, human-in-the-loop by default. | Deterministic |
 | **Compile** | Transform sources into structured semantic knowledge. | Probabilistic (model proposes, system stores) |
 | **Reason** | Answer questions or conduct scoped research over compiled knowledge. | Probabilistic |
 | **Render** | Produce durable artifacts — reports, slides, charts, briefings. | Probabilistic |
 | **Refine** | Lint knowledge, test recall, promote useful outputs, improve the base. | Both |
 
 This loop is stated once. Everything else in this document is an elaboration of how each stage works, where the boundaries are, and what the system stores.
+
+**Default ingest posture.** Early and default ingest is source-by-source: one document at a time, human-aware, quality-first. The operator chooses what to ingest, reviews summaries, and approves compilation. Batch ingest exists as a capability but is not the default mode — it is unlocked once the operator trusts the pipeline's output quality on their corpus.
 
 ---
 
@@ -157,6 +161,71 @@ This is the most important architectural constraint.
 - Recall item generation
 
 **Rule:** The model proposes content. The deterministic system owns state, provenance, policy, and lifecycle. The model never writes directly to audit, policy, or promotion tables.
+
+### 5.4 Schema & agent contract
+
+The agent does not operate freestyle. Its behavior is governed by a schema contract layer that is part of the architecture, not documentation bolted on afterward.
+
+**Components of the schema contract:**
+
+| Component | Location | Governs |
+|-----------|----------|---------|
+| `CLAUDE.md` | Repo root | Agent behavior, conventions, architectural constraints |
+| Frontmatter conventions | All compiled wiki pages | Required fields, type classification, provenance references |
+| File policies | Workspace layout rules | Where each data type lives, naming, allowed operations per directory |
+| Lifecycle rules | Kernel + promotion rules | Valid state transitions, staleness definitions, archival criteria |
+| Compilation schemas | Compiler pass definitions | Required output structure for each pass (summary, concept, topic, etc.) |
+
+**Contract rules:**
+
+1. The agent reads the schema before operating. It does not invent conventions.
+2. Every compiled page must conform to the frontmatter schema for its type (source summary, concept, topic, entity, contradiction, open question).
+3. File placement follows workspace layout rules — the agent does not create directories or files outside the defined structure without explicit operator approval.
+4. The schema evolves with the repo and corpus. When a new pass or page type is added, the schema is updated first, then the compiler implements it.
+5. Linting validates schema conformance. A page that compiles but violates the schema is a lint failure.
+
+The schema layer sits between the deterministic and probabilistic sides. It is owned deterministically (checked into the repo, versioned, linted) but informs probabilistic behavior (what the model produces and how it structures output).
+
+### 5.5 Operational control files
+
+Two lightweight operator-facing files provide running situational awareness without requiring database queries or tool invocations.
+
+**`workspace/wiki/index.md`** — Catalog of compiled knowledge. Lists all compiled pages by type (sources, concepts, topics, entities) with links and last-compiled dates. Rebuilt automatically on compilation. This is the navigational entry point for the semantic knowledge layer — a table of contents for what the system knows.
+
+**`workspace/audit/log.md`** — Chronological digest of meaningful operations. Records ingests, compilation passes, queries, lint results, promotions, and task lifecycle events as a human-readable sequential log. Each entry includes timestamp, operation type, and a one-line summary.
+
+These are plain markdown files. They complement the structured audit traces (JSONL) and SQLite state — they do not replace them. Their purpose is operator visibility: open them in any editor and see what happened, what exists, and what changed.
+
+### 5.6 Learning model
+
+Intentional Cognition OS improves over time at three distinct layers. Each layer has different cost, inspectability, and velocity characteristics.
+
+| Layer | What it is | What changes | When |
+|-------|-----------|-------------|------|
+| **Context** | Configurable knowledge and instructions outside the harness — `CLAUDE.md`, agent rules, skills, compiled wiki, topic instructions, user memory, recall history | Updated per-session or per-corpus by the operator or by governed system behavior | Now (Phases 1-4) |
+| **Harness** | The runtime around the model — CLI, kernel, compiler passes, task orchestration, provenance system, promotion rules, audit, default behavior | Improved offline using traces and evals, shipped as code changes under review | Later (Phase 3+, as traces accumulate) |
+| **Model** | Foundation model weights (Claude, etc.) | Fine-tuned or swapped only when justified by stable evidence from harness and context layers | Much later, if ever |
+
+**Project stance.** Early versions of the product learn primarily through context. The operator curates `CLAUDE.md`, refines compilation schemas, builds the wiki, adjusts agent instructions, and accumulates recall data. This is deliberate — context is the cheapest, most inspectable, and fastest-to-iterate learning surface. Harness improvements come later, driven by patterns visible in traces and eval results. Model adaptation is explicitly deferred until the context and harness layers are stable enough to produce reliable training signal.
+
+**Traces are the substrate.** Every meaningful system event produces a trace (Section 5.5, L6). These traces are not just for debugging — they are the shared substrate for all future learning:
+
+- **Context refinement** — Which compilation schemas produce good summaries? Which topics have high retrieval hit rates? Which recall items are retained vs forgotten? Traces answer these questions and inform schema/wiki/recall updates.
+- **Harness improvement** — Which compiler passes produce stale output? Where do task workflows stall? Which promotion decisions get reversed? Traces identify harness-level patterns that justify code changes.
+- **Future learning analysis** — If model adaptation ever becomes justified, traces provide the structured evidence base. No traces, no signal, no adaptation.
+
+Relevant trace types: ingest events, compilation events, retrieval hits, ask flows, render flows, promotion decisions, task lifecycle events, recall results, eval outcomes.
+
+**Governance alignment.** This learning model is consistent with the project's audit-first, governed design:
+
+- Context updates are governed by the schema contract (Section 5.4) — the agent does not self-modify its own rules without operator review.
+- Harness changes are code changes — they go through version control, review, and testing like any other code.
+- Model adaptation, if it ever happens, requires stable evidence from both context and harness layers, not speculation.
+- No layer mutates trust-critical state (audit, policy, provenance) as part of learning. The control plane is not a learning surface.
+
+The point is auditable improvement under stewardship, not unconstrained self-modification.
+
+**Adjacent patterns.** This three-layer model is validated by patterns emerging in the open-source agent ecosystem: durable execution and human-in-the-loop runtime patterns (LangGraph), persistent memory and stateful agent patterns (Letta), trace/eval infrastructure (Langfuse, Opik), repo-native markdown rule and config patterns (Continue), agent runtime/harness separation (OpenHands), and explicit context files as first-class architecture (SOUL.md). These are reference points for architectural direction, not dependencies.
 
 ---
 
@@ -320,6 +389,7 @@ intentional-cognition-os/
 │   │   ├── repos/
 │   │   └── notes/
 │   ├── wiki/               # L2: Compiled semantic knowledge
+│   │   ├── index.md        # Catalog of all compiled pages (auto-rebuilt)
 │   │   ├── sources/        # Per-source summaries
 │   │   ├── concepts/       # Extracted concept pages
 │   │   ├── entities/       # Entity pages
@@ -345,6 +415,7 @@ intentional-cognition-os/
 │   │   ├── quizzes/
 │   │   └── retention/
 │   └── audit/              # L6: Deterministic control data
+│       ├── log.md          # Chronological operation digest (human-readable)
 │       ├── traces/
 │       ├── provenance/
 │       ├── policy/
@@ -369,7 +440,8 @@ intentional-cognition-os/
 | Orchestration | Agent SDK | Multi-agent research (Phase 3) |
 | Retrieval | Full-text search over compiled markdown | Simple first — no vector DB until proven needed |
 | Output | Markdown, Marp, matplotlib | File-based, inspectable |
-| Compatibility | Obsidian-compatible wiki output | No plugin dependency, just standard markdown |
+
+**Obsidian posture.** Obsidian is a strong local inspection and browsing surface for the compiled wiki. Its graph view, backlink panel, and metadata querying are useful for navigating compiled knowledge. However, the architecture does not depend on Obsidian-specific behavior. Output is standard markdown with YAML frontmatter — compatible with Obsidian, any markdown editor, and `cat`. Obsidian is a preferred viewer, not an architectural dependency.
 
 ---
 
@@ -378,7 +450,7 @@ intentional-cognition-os/
 Do not let this collapse into:
 - A coding agent (this is a knowledge system, not a code generator)
 - A vector database wrapper (knowledge is compiled markdown, not embeddings)
-- An Obsidian plugin (output is Obsidian-compatible, but the system is independent)
+- An Obsidian plugin (Obsidian is a preferred inspection surface, not a dependency — the system is frontend-agnostic)
 - A search bar with branding (the value is compilation, not retrieval)
 - An opaque memory blob (everything is inspectable, traceable, file-based)
 - A one-shot research bot (outputs are durable, research compounds)
@@ -392,24 +464,38 @@ Do not let this collapse into:
 
 Prove the operating loop works end to end on a single user's local machine.
 
-### 14.2 Scope
+### 14.2 Operating assumptions
+
+The MVP assumes small-to-moderate scale and local-first operation:
+
+- **Corpus size:** Tens to low hundreds of source documents. Not internet-scale.
+- **Retrieval:** Full-text search over compiled markdown summaries. No vector database required.
+- **Ingest mode:** Source-by-source, human-in-the-loop. The operator selects what to ingest, reviews compilation output, and approves before the next source. Batch ingest is a later capability, not the default.
+- **Infrastructure:** Local filesystem + SQLite. No cloud services, containers, or external databases.
+- **Inspection:** Compiled wiki is browsable in any markdown editor. Obsidian is preferred but not required.
+
+These assumptions hold through Phases 1-4. Remote and scale requirements are Phase 5 concerns.
+
+### 14.3 Scope
 
 - Ingest markdown, PDF, and web-clipped sources with provenance
 - Compile source summaries and concept pages
 - Answer questions against compiled knowledge with citations
 - Generate markdown reports
 - Generate Marp slide decks
-- Run basic lint checks (staleness, gaps)
+- Run basic lint checks (staleness, gaps, schema conformance)
 - File outputs back into workspace
 - Show provenance and task trace
+- Maintain `index.md` and `log.md` as operator-visible control surfaces
 
-### 14.3 Explicitly deferred
+### 14.4 Explicitly deferred
 
 - Remote infrastructure
 - Multi-user collaboration
 - Graph visualization
 - Model fine-tuning
 - Vector search
+- Batch ingest as default mode
 - Complex agent orchestration beyond single-task research
 
 ---
