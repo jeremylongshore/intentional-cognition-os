@@ -456,7 +456,7 @@ describe('runBatchIngest', () => {
   let tempBase: string;
   let workspaceRoot: string;
   let sourceDir: string;
-  let db: ReturnType<typeof import('@ico/kernel').initDatabase>['value'];
+  let db: Database;
 
   const globalOpts = (): GlobalOptions => ({ workspace: workspaceRoot, json: false });
   const ingestOpts = (): IngestOptions => ({});

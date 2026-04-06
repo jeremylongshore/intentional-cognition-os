@@ -131,7 +131,7 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
 
     // Create and ingest a file
     const testFile = createTestFile('research.md');
-    const ingestResult = run(['ingest', testFile, '--workspace', wsRoot]);
+    const ingestResult = run(['ingest', testFile, '--yes', '--workspace', wsRoot]);
     expect(ingestResult.exitCode).toBe(0);
     expect(ingestResult.stdout).toContain('Ingested');
 
@@ -237,7 +237,7 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     const wsRoot = initWorkspace('ws');
     const testFile = createTestFile();
 
-    const result = run(['ingest', testFile, '--workspace', wsRoot]);
+    const result = run(['ingest', testFile, '--yes', '--workspace', wsRoot]);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('Ingested');
     expect(result.stdout).toContain('sha256:');
@@ -248,7 +248,7 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     const wsRoot = initWorkspace('ws');
     const testFile = createTestFile('my-note.md');
 
-    run(['ingest', testFile, '--workspace', wsRoot]);
+    run(['ingest', testFile, '--yes', '--workspace', wsRoot]);
 
     // Slugified name lands in raw/notes/
     expect(existsSync(join(wsRoot, 'raw', 'notes', 'my-note.md'))).toBe(true);
@@ -262,10 +262,10 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     const wsRoot = initWorkspace('ws');
     const testFile = createTestFile();
 
-    const first = run(['ingest', testFile, '--workspace', wsRoot]);
+    const first = run(['ingest', testFile, '--yes', '--workspace', wsRoot]);
     expect(first.exitCode).toBe(0);
 
-    const second = run(['ingest', testFile, '--workspace', wsRoot]);
+    const second = run(['ingest', testFile, '--yes', '--workspace', wsRoot]);
     expect(second.exitCode).toBe(0);
     expect(second.stdout).toContain('Already ingested');
   });
@@ -310,7 +310,7 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     const wsRoot = initWorkspace('ws');
     const testFile = createTestFile();
 
-    run(['ingest', testFile, '--workspace', wsRoot]);
+    run(['ingest', testFile, '--yes', '--workspace', wsRoot]);
 
     const result = run(['status', '--json', '--workspace', wsRoot]);
     expect(result.exitCode).toBe(0);
@@ -330,7 +330,7 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     const wsRoot = initWorkspace('ws');
     const testFile = createTestFile();
 
-    run(['ingest', testFile, '--workspace', wsRoot]);
+    run(['ingest', testFile, '--yes', '--workspace', wsRoot]);
 
     const result = run(['inspect', 'traces', '--workspace', wsRoot]);
     expect(result.exitCode).toBe(0);
@@ -343,8 +343,8 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     // Ingest two distinct files to generate multiple trace events
     const file1 = createTestFile('note-a.md', '# A\n');
     const file2 = createTestFile('note-b.md', '# B\n');
-    run(['ingest', file1, '--workspace', wsRoot]);
-    run(['ingest', file2, '--workspace', wsRoot]);
+    run(['ingest', file1, '--yes', '--workspace', wsRoot]);
+    run(['ingest', file2, '--yes', '--workspace', wsRoot]);
 
     const result = run(['inspect', 'traces', '--last', '1', '--workspace', wsRoot]);
     expect(result.exitCode).toBe(0);
@@ -356,7 +356,7 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     const wsRoot = initWorkspace('ws');
     const testFile = createTestFile();
 
-    run(['ingest', testFile, '--workspace', wsRoot]);
+    run(['ingest', testFile, '--yes', '--workspace', wsRoot]);
 
     const result = run(['inspect', 'traces', '--json', '--workspace', wsRoot]);
     expect(result.exitCode).toBe(0);
@@ -387,7 +387,7 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     const wsRoot = initWorkspace('ws');
     const testFile = createTestFile();
 
-    run(['ingest', testFile, '--workspace', wsRoot]);
+    run(['ingest', testFile, '--yes', '--workspace', wsRoot]);
 
     const result = run(['inspect', 'audit', '--workspace', wsRoot]);
     expect(result.exitCode).toBe(0);
