@@ -185,7 +185,7 @@ export function recordProvenance(
  * @returns `ok(records)` — an empty array when no records match.
  */
 export function getProvenance(
-  db: Database,
+  _db: Database,
   workspacePath: string,
   outputPath: string,
 ): Result<ProvenanceRecord[], Error> {
@@ -233,7 +233,7 @@ export function getProvenance(
  * @returns `ok(records)` — an empty array when the source has no derivations.
  */
 export function getDerivations(
-  db: Database,
+  _db: Database,
   workspacePath: string,
   sourceId: string,
 ): Result<ProvenanceRecord[], Error> {
