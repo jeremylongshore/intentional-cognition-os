@@ -119,10 +119,11 @@ describe('stub command exit codes', () => {
     expect(result.stdout.trim()).toBe(version);
   });
 
-  it('ico compile exits 1 and mentions Epic 6', () => {
-    const result = runCli(['compile']);
-    expect(result.status).toBe(1);
-    expect(result.stderr).toContain('Epic 6');
+  it('ico compile shows help with subcommands', () => {
+    const result = runCli(['compile', '--help']);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('sources');
+    expect(result.stdout).toContain('all');
   });
 
   it('ico ask exits 1 and mentions Epic 7', () => {
