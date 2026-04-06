@@ -420,23 +420,6 @@ interface TestEnv {
   sourceDir: string;
 }
 
-/**
- * Inserts a minimal source row so FK constraints on `compilations` are satisfied.
- * Returns the inserted source id.
- */
-function _insertSource(
-  db: Database,
-  id: string,
-  path: string,
-  hash: string,
-  ingestedAt?: string,
-): void {
-  db.prepare(
-    `INSERT OR IGNORE INTO sources (id, path, type, ingested_at, hash)
-     VALUES (?, ?, ?, ?, ?)`,
-  ).run(id, path, 'markdown', ingestedAt ?? new Date().toISOString(), hash);
-}
-
 /** Writes a UTF-8 file and returns its absolute path. */
 function writeFixture(dir: string, name: string, content: string): string {
   const filePath = join(dir, name);
