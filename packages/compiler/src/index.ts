@@ -38,3 +38,28 @@ export {
   type SummarizeOptions,
   type SummarizeResult,
 } from './passes/summarize.js';
+export {
+  extractConcepts,
+  type ExtractOptions,
+  type ExtractResult,
+} from './passes/extract.js';
+export {
+  synthesizeTopics,
+  type SynthesizeOptions,
+  type SynthesizeResult,
+} from './passes/synthesize.js';
+export {
+  addBacklinks,
+  type LinkOptions,
+  type LinkResult,
+} from './passes/link.js';
+export {
+  detectContradictions,
+  type ContradictOptions,
+  type ContradictResult,
+} from './passes/contradict.js';
+export {
+  identifyGaps,
+  type GapOptions,
+  type GapResult,
+} from './passes/gap.js';
