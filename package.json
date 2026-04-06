@@ -22,5 +22,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/jeremylongshore/intentional-cognition-os.git"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "better-sqlite3"
+    ]
   }
 }
