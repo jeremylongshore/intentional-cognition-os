@@ -204,7 +204,8 @@ function handleRemove(
 export function register(program: Command): void {
   const mount = program
     .command('mount')
-    .description('Manage corpus mount points');
+    .description('Manage corpus mount points')
+    .addHelpText('after', '\nExamples:\n  $ ico mount add papers ~/research/papers\n  $ ico mount list\n  $ ico mount remove papers');
 
   mount
     .command('add <name> <path>')

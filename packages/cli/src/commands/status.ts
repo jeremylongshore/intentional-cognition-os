@@ -211,6 +211,7 @@ export function register(program: Command): void {
   program
     .command('status')
     .description('Show workspace status')
+    .addHelpText('after', '\nExamples:\n  $ ico status\n  $ ico status --json')
     .action(() => {
       const globalOpts = program.opts<{ workspace?: string; json?: boolean }>();
       const dbPath = resolveWorkspaceDb(globalOpts);

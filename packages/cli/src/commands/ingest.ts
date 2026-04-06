@@ -326,6 +326,7 @@ export function register(program: Command): void {
     .option('--title <title>', 'Source title')
     .option('--author <author>', 'Source author')
     .option('--force', 'Override size limits')
+    .addHelpText('after', '\nExamples:\n  $ ico ingest paper.pdf\n  $ ico ingest notes.md --title "Meeting Notes" --author "Jeremy"')
     .action((filePath: string, opts: IngestOptions, cmd: Command) => {
       const globalOpts = cmd.optsWithGlobals<GlobalOptions & IngestOptions>();
 
