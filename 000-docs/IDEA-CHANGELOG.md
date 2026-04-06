@@ -7,6 +7,29 @@ Version numbers follow the blueprint version, not the software release.
 
 ## [Unreleased]
 
+## [Standards Freeze v1] — 2026-04-06
+
+### Added
+- **Standards Freeze v1** — Epic 1 (Canonical Design Pack) complete. 14 standards documents frozen for Phase 1 (docs 008–021). All cross-references verified. CLAUDE.md updated with Standards Reference section. Any changes to frozen standards require an entry in this changelog and review of all dependent documents.
+
+### Standards Documents Delivered
+- 008-AT-GLOS: Canonical Glossary and Terminology Lock
+- 009-AT-FMSC: Frontmatter Schemas for All 7 Compiled Page Types
+- 010-AT-DBSC: SQLite Schema with Full DDL and Migration Strategy
+- 011-AT-TRSC: JSONL Trace Event Schema and Envelope Format
+- 012-AT-WPOL: Workspace Directory Policy
+- 013-AT-CODE: TypeScript Coding Standards and Package Conventions
+- 014-OD-BEAD: Bead Workflow and Epic Execution Conventions
+- 015-AT-TEST: Testing Strategy and Fixture Workspace Design
+- 016-OD-CICD: CI/CD Pipeline Upgrade Specification
+- 017-AT-PRMP: Prompt Template Standards for Compiler Passes
+- 018-AT-PROM: Promotion Rules and Policy Enforcement Specification
+- 019-OD-TMPL: ADR and AAR Templates
+- 020-AT-DIAG: Architecture Diagram Prompt Pack
+- 021-AT-SECV: v1 Scope Constraints and Security Standards
+
+---
+
 ### Added
 
 - **Competitive landscape research** — Validated ICO thesis against 2026 market: Karpathy's "LLM Knowledge Bases" confirms compilation category, "deterministic core + agentic shell" is industry consensus, RAG fatigue drives market toward compilation, EU/CA/CO AI Acts (mid-2026) require audit trails (ICO's L6 is a moat). Competitive matrix shows ICO is the only project with all 8 differentiators (compilation, semantic FS, deterministic control, provenance, multi-agent research, recall, CLI-first, local-first) across Karpathy, qmd, Onyx, Mem0, and Fabric.
