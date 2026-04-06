@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.1.4] - 2026-04-06
+
+- docs: 10-epic execution plan with 117 beads, 6-auditor review, and audit remediation (c731f14)
+- bd init: initialize beads issue tracking (9b92472)
+
+
 ## [v0.1.3] - 2026-04-03
 
 - docs: master blueprint V2 rewrite + idea changelog (b8734dc)
