@@ -7,11 +7,13 @@
  * @module commands/ingest
  */
 
-import { copyFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { basename, extname, join, relative } from 'node:path';
+import { createInterface } from 'node:readline';
 
 import type { Command } from 'commander';
 
+import { ingestSource } from '@ico/compiler';
 import {
   appendAuditLog,
   closeDatabase,
@@ -71,6 +73,100 @@ export interface IngestResult {
   hash: string;
   ingestedAt: string;
   alreadyIngested?: boolean;
+}
+
+export interface BatchIngestSummary {
+  total: number;
+  ingested: number;
+  skipped: number;
+  alreadyIngested: number;
+  errors: Array<{ file: string; message: string }>;
+}
+
+// ---------------------------------------------------------------------------
+// Directory scanning
+// ---------------------------------------------------------------------------
+
+/** File extensions accepted by the ingest pipeline. */
+export const SUPPORTED_EXTENSIONS = new Set(['.md', '.mdx', '.pdf', '.html', '.htm', '.txt']);
+
+/**
+ * Recursively scan a directory and return all files whose extensions are in
+ * `SUPPORTED_EXTENSIONS`. Hidden entries (starting with `.`) and
+ * `node_modules` directories are skipped at every level. Results are sorted
+ * alphabetically for deterministic processing order.
+ *
+ * @param dirPath - Absolute path to the directory to scan.
+ * @returns Sorted array of absolute file paths.
+ */
+export function scanDirectory(dirPath: string): string[] {
+  const results: string[] = [];
+
+  function walk(dir: string): void {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+      } else if (SUPPORTED_EXTENSIONS.has(extname(entry.name).toLowerCase())) {
+        results.push(fullPath);
+      }
+    }
+  }
+
+  walk(dirPath);
+  return results.sort();
+}
+
+// ---------------------------------------------------------------------------
+// Batch ingest logic
+// ---------------------------------------------------------------------------
+
+/**
+ * Ingest every supported file discovered under `dirPath`.
+ *
+ * Hidden files, `node_modules`, and files with unsupported extensions are
+ * silently skipped (the skipped count is reported in the summary). Each file
+ * is ingested via `runIngest`; failures are collected and reported at the end
+ * rather than aborting the batch.
+ *
+ * @param dirPath    - Absolute path to the directory to scan.
+ * @param ingestOpts - Per-file ingest options (title/author not typically used
+ *                     for batch; force is respected).
+ * @param globalOpts - Global CLI options forwarded to each `runIngest` call.
+ * @returns A summary object with counts of ingested, skipped, and errored files.
+ */
+export function runBatchIngest(
+  dirPath: string,
+  ingestOpts: IngestOptions,
+  globalOpts: GlobalOptions,
+): BatchIngestSummary {
+  const files = scanDirectory(dirPath);
+  const summary: BatchIngestSummary = {
+    total: files.length,
+    ingested: 0,
+    skipped: 0,
+    alreadyIngested: 0,
+    errors: [],
+  };
+
+  if (files.length === 0) {
+    return summary;
+  }
+
+  for (const file of files) {
+    const result = runIngest(file, ingestOpts, globalOpts);
+    if (!result.ok) {
+      summary.errors.push({ file, message: result.error.message });
+      summary.skipped++;
+    } else if (result.value.alreadyIngested === true) {
+      summary.alreadyIngested++;
+    } else {
+      summary.ingested++;
+    }
+  }
+
+  return summary;
 }
 
 // ---------------------------------------------------------------------------
@@ -311,6 +407,56 @@ function printHumanOutput(displayName: string, result: IngestResult): void {
 }
 
 // ---------------------------------------------------------------------------
+// Confirmation helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Prompt the user with a yes/no question and return `true` unless the answer
+ * is 'n' or 'N'.  Returns `false` immediately when stdin is not a TTY.
+ *
+ * @param message - The prompt string (should end with a trailing space).
+ */
+async function confirm(message: string): Promise<boolean> {
+  if (!process.stdin.isTTY) return false;
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise(resolve => {
+    rl.question(message, answer => {
+      rl.close();
+      resolve(answer.toLowerCase() !== 'n');
+    });
+  });
+}
+
+/**
+ * Display a metadata preview for a file about to be ingested.
+ *
+ * @param filePath - Path to the source file.
+ * @param type     - Detected source type.
+ * @param fileSize - File size in bytes.
+ */
+async function showPreview(filePath: string, type: SourceType, fileSize: number): Promise<void> {
+  const adapterResult = await ingestSource(filePath, type);
+
+  const title = adapterResult.ok ? (adapterResult.value.metadata.title ?? '(untitled)') : '(untitled)';
+  const author = adapterResult.ok ? (adapterResult.value.metadata.author ?? '') : '';
+  const wordCount = adapterResult.ok ? adapterResult.value.metadata.wordCount : 0;
+  const estTokens = Math.round(wordCount * 1.33 / 4) * 4;
+  const sizeMb = (fileSize / (1024 * 1024)).toFixed(1);
+
+  process.stdout.write('\n');
+  process.stdout.write(formatInfo(`Source:      ${basename(filePath)}`) + '\n');
+  process.stdout.write(formatInfo(`Type:        ${type}`) + '\n');
+  process.stdout.write(formatInfo(`Title:       ${title}`) + '\n');
+  if (author) {
+    process.stdout.write(formatInfo(`Author:      ${author}`) + '\n');
+  }
+  process.stdout.write(formatInfo(`Words:       ~${wordCount.toLocaleString()}`) + '\n');
+  process.stdout.write(formatInfo(`Size:        ${sizeMb} MB`) + '\n');
+  process.stdout.write(formatInfo(`Est. tokens: ~${estTokens.toLocaleString()}`) + '\n');
+  process.stdout.write('\n');
+}
+
+// ---------------------------------------------------------------------------
 // Commander registration
 // ---------------------------------------------------------------------------
 
@@ -326,9 +472,10 @@ export function register(program: Command): void {
     .option('--title <title>', 'Source title')
     .option('--author <author>', 'Source author')
     .option('--force', 'Override size limits')
-    .addHelpText('after', '\nExamples:\n  $ ico ingest paper.pdf\n  $ ico ingest notes.md --title "Meeting Notes" --author "Jeremy"')
-    .action((filePath: string, opts: IngestOptions, cmd: Command) => {
-      const globalOpts = cmd.optsWithGlobals<GlobalOptions & IngestOptions>();
+    .option('--yes', 'Skip confirmation prompt')
+    .addHelpText('after', '\nExamples:\n  $ ico ingest paper.pdf\n  $ ico ingest notes.md --title "Meeting Notes" --author "Jeremy"\n  $ ico ingest paper.pdf --yes')
+    .action(async (filePath: string, opts: IngestOptions & { yes?: boolean }, cmd: Command) => {
+      const globalOpts = cmd.optsWithGlobals<GlobalOptions & IngestOptions & { yes?: boolean }>();
 
       const ingestOpts: IngestOptions = {
         ...(opts.title !== undefined && { title: opts.title }),
@@ -341,6 +488,113 @@ export function register(program: Command): void {
         ...(globalOpts.verbose !== undefined && { verbose: globalOpts.verbose }),
         ...(globalOpts.workspace !== undefined && { workspace: globalOpts.workspace }),
       };
+
+      const skipConfirm = opts.yes === true || globalOpts.yes === true;
+
+      // ------------------------------------------------------------------
+      // Determine whether the path is a directory or a single file.
+      // ------------------------------------------------------------------
+      const pathStat = statSync(filePath, { throwIfNoEntry: false });
+
+      if (pathStat?.isDirectory()) {
+        // ----------------------------------------------------------------
+        // Batch ingest mode
+        // ----------------------------------------------------------------
+        const files = scanDirectory(filePath);
+
+        if (files.length === 0) {
+          process.stdout.write(formatWarning('No supported files found.') + '\n');
+          return;
+        }
+
+        process.stdout.write(
+          formatInfo(`Found ${files.length} supported file(s) in ${filePath}`) + '\n',
+        );
+
+        let batchIngested = 0;
+        let batchAlreadyIngested = 0;
+        let batchSkipped = 0;
+        const batchErrors: Array<{ file: string; message: string }> = [];
+
+        for (const file of files) {
+          if (!skipConfirm && process.stdin.isTTY) {
+            let fileSize = 0;
+            try { fileSize = statSync(file).size; } catch { /* non-fatal */ }
+            const previewType = detectSourceType(file);
+            await showPreview(file, previewType, fileSize);
+            const confirmed = await confirm('Ingest this file? [Y/n] ');
+            if (!confirmed) {
+              process.stdout.write(formatWarning(`Skipped: ${basename(file)}`) + '\n');
+              batchSkipped++;
+              continue;
+            }
+          } else if (!skipConfirm && !process.stdin.isTTY) {
+            process.stderr.write(
+              formatError('Non-TTY input detected. Use --yes to bypass confirmation.') + '\n',
+            );
+            process.exit(1);
+          }
+
+          const result = runIngest(file, ingestOpts, global);
+          if (!result.ok) {
+            process.stderr.write(formatError(`${basename(file)}: ${result.error.message}`) + '\n');
+            batchErrors.push({ file, message: result.error.message });
+            batchSkipped++;
+          } else if (result.value.alreadyIngested === true) {
+            batchAlreadyIngested++;
+          } else {
+            batchIngested++;
+          }
+        }
+
+        // Summary line
+        process.stdout.write('\n');
+        process.stdout.write(
+          formatSuccess(
+            `Ingested ${batchIngested} of ${files.length} files` +
+            ` (${batchSkipped} skipped, ${batchAlreadyIngested} already ingested)`,
+          ) + '\n',
+        );
+
+        if (batchErrors.length > 0) {
+          process.exit(1);
+        }
+        return;
+      }
+
+      // ------------------------------------------------------------------
+      // Single file mode (original behavior)
+      // ------------------------------------------------------------------
+      if (!skipConfirm) {
+        // Detect type early so we can pass it to the preview helper.
+        if (!existsSync(filePath)) {
+          process.stderr.write(formatError(`File not found: ${filePath}`) + '\n');
+          process.exit(1);
+        }
+
+        let fileSize = 0;
+        try {
+          fileSize = statSync(filePath).size;
+        } catch {
+          // Non-fatal — preview will still show without accurate size.
+        }
+
+        const previewType = detectSourceType(filePath);
+        await showPreview(filePath, previewType, fileSize);
+
+        if (!process.stdin.isTTY) {
+          process.stderr.write(
+            formatError('Non-TTY input detected. Use --yes to bypass confirmation.') + '\n',
+          );
+          process.exit(1);
+        }
+
+        const confirmed = await confirm('Proceed? [Y/n] ');
+        if (!confirmed) {
+          process.stdout.write(formatWarning('Aborted.') + '\n');
+          return;
+        }
+      }
 
       const result = runIngest(filePath, ingestOpts, global);
       if (!result.ok) {

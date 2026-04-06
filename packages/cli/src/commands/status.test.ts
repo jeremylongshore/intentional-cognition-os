@@ -33,6 +33,7 @@ import {
   collectStatusData,
   countSources,
   countTasks,
+  renderSourcesTable,
   renderStatusNormal,
 } from './status.js';
 
@@ -285,5 +286,95 @@ describe('collectStatusData', () => {
     for (const key of ['created', 'collecting', 'synthesizing', 'critiquing', 'rendering', 'completed', 'archived']) {
       expect(tasks).toHaveProperty(key);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// renderSourcesTable — unit tests
+// ---------------------------------------------------------------------------
+
+describe('renderSourcesTable', () => {
+  it('shows "No sources ingested yet." when the array is empty', () => {
+    const out = stripAnsi(renderSourcesTable([]));
+    expect(out).toContain('No sources ingested yet.');
+  });
+
+  it('contains "Sources" header', () => {
+    const out = stripAnsi(renderSourcesTable([]));
+    expect(out).toContain('Sources');
+  });
+
+  it('renders column headers when sources are present', () => {
+    const sources = [
+      {
+        id: 'abc',
+        path: 'raw/papers/paper.pdf',
+        type: 'pdf' as const,
+        title: 'Attention Is All You Need',
+        author: 'Vaswani et al.',
+        hash: '9f86d08188bef50e0dbc4b27e77e47c7' + '0123456789abcdef',
+        ingested_at: '2026-04-06T12:00:00.000Z',
+        word_count: 8400,
+        metadata: null,
+      },
+    ];
+    const out = stripAnsi(renderSourcesTable(sources));
+    expect(out).toContain('Type');
+    expect(out).toContain('Title');
+    expect(out).toContain('Hash (short)');
+    expect(out).toContain('Ingested');
+  });
+
+  it('renders source data rows correctly', () => {
+    const sources = [
+      {
+        id: 'abc',
+        path: 'raw/papers/paper.pdf',
+        type: 'pdf' as const,
+        title: 'Attention Is All You Need',
+        author: 'Vaswani et al.',
+        hash: '9f86d08188bef50e0dbc4b27e77e47c70123456789abcdef0123456789abcdef',
+        ingested_at: '2026-04-06T12:00:00.000Z',
+        word_count: 8400,
+        metadata: null,
+      },
+      {
+        id: 'def',
+        path: 'raw/notes/meeting.md',
+        type: 'markdown' as const,
+        title: 'Meeting Notes',
+        author: null,
+        hash: 'e3b0c44298fc1c149afbf4c8996fb92400000000000000000000000000000000',
+        ingested_at: '2026-04-06T14:00:00.000Z',
+        word_count: 120,
+        metadata: null,
+      },
+    ];
+    const out = stripAnsi(renderSourcesTable(sources));
+    expect(out).toContain('pdf');
+    expect(out).toContain('Attention Is All You Need');
+    expect(out).toContain('9f86d081');
+    expect(out).toContain('2026-04-06');
+    expect(out).toContain('markdown');
+    expect(out).toContain('Meeting Notes');
+    expect(out).toContain('e3b0c442');
+  });
+
+  it('shows (untitled) for sources with no title', () => {
+    const sources = [
+      {
+        id: 'xyz',
+        path: 'raw/notes/unnamed.txt',
+        type: 'text' as const,
+        title: null,
+        author: null,
+        hash: 'aaaa'.repeat(16),
+        ingested_at: '2026-04-06T10:00:00.000Z',
+        word_count: 50,
+        metadata: null,
+      },
+    ];
+    const out = stripAnsi(renderSourcesTable(sources));
+    expect(out).toContain('(untitled)');
   });
 });
