@@ -1,16 +1,16 @@
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
+import { afterEach, beforeEach,describe, expect, it } from 'vitest';
 
 import {
-  formatTable,
-  formatSuccess,
+  bold,
+  dim,
   formatError,
-  formatWarning,
+  formatHeader,
   formatInfo,
   formatJSON,
   formatKeyValue,
-  formatHeader,
-  dim,
-  bold,
+  formatSuccess,
+  formatTable,
+  formatWarning,
 } from './output.js';
 
 // ---------------------------------------------------------------------------
@@ -234,7 +234,7 @@ describe('color suppression via NO_COLOR', () => {
 
   afterEach(() => {
     if (originalNoColor === undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+       
       delete process.env['NO_COLOR'];
     } else {
       process.env['NO_COLOR'] = originalNoColor;
@@ -291,7 +291,7 @@ describe('bold and dim ANSI codes', () => {
 
   afterEach(() => {
     if (originalNoColor === undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+       
       delete process.env['NO_COLOR'];
     } else {
       process.env['NO_COLOR'] = originalNoColor;
