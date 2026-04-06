@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.1.7] - 2026-04-06
+
+- Epic 2: Repo Foundation — 4 packages, real tooling, 36 tests (#4) (a5c5b76)
+
+
 ## [v0.1.6] - 2026-04-06
 
 - build(deps): Bump actions/checkout from 4 to 6 (#5) (3cb176a)
