@@ -39,7 +39,7 @@ export function redactSecrets(obj: Record<string, unknown>): Record<string, unkn
     } else if (typeof value === 'string' && SECRET_PATTERNS.some(p => p.test(value))) {
       result[key] = '[REDACTED]';
     } else if (Array.isArray(value)) {
-      result[key] = value.map(item =>
+      result[key] = (value as unknown[]).map((item): unknown =>
         typeof item === 'object' && item !== null
           ? redactSecrets(item as Record<string, unknown>)
           : item

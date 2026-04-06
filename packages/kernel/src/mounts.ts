@@ -9,8 +9,8 @@ import { existsSync } from 'node:fs';
 
 import type { Database } from 'better-sqlite3';
 
-import { ok, err, type Result } from '@ico/types';
-import { MountSchema, type Mount } from '@ico/types';
+import { err, ok, type Result } from '@ico/types';
+import { type Mount,MountSchema } from '@ico/types';
 
 /** Row shape returned directly from better-sqlite3 for the mounts table. */
 interface MountRow {

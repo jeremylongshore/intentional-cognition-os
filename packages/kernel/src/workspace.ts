@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { ok, err, type Result } from '@ico/types';
+import { err, ok, type Result } from '@ico/types';
 
 export interface WorkspaceInfo {
   name: string;

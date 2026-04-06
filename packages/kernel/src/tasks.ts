@@ -8,13 +8,14 @@
  * All functions return `Result<T, Error>` — never throw.
  */
 
+import { randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { randomUUID } from 'node:crypto';
 
-import { ok, err, type Result } from '@ico/types';
-import type { TaskStatus } from '@ico/types';
 import type { Database } from 'better-sqlite3';
+
+import type { TaskStatus } from '@ico/types';
+import { err, ok, type Result } from '@ico/types';
 
 import { writeTrace } from './traces.js';
 

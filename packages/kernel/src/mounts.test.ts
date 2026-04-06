@@ -2,17 +2,17 @@ import { mkdtempSync, rmdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-
 import type { Database } from 'better-sqlite3';
-import { initDatabase, closeDatabase } from './state.js';
+import { afterEach,beforeEach, describe, expect, it } from 'vitest';
+
 import {
-  registerMount,
-  listMounts,
   getMount,
   getMountByName,
+  listMounts,
+  registerMount,
   removeMount,
 } from './mounts.js';
+import { closeDatabase,initDatabase } from './state.js';
 
 // ---------------------------------------------------------------------------
 // Helpers

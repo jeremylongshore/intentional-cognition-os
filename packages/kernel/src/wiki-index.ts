@@ -7,7 +7,7 @@ import {
 } from 'node:fs';
 import { basename, resolve } from 'node:path';
 
-import { ok, err, type Result } from '@ico/types';
+import { err, ok, type Result } from '@ico/types';
 
 /**
  * Scanned wiki subdirectories, in display order.

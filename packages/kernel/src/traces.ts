@@ -20,9 +20,10 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
-import { ok, err, type Result } from '@ico/types';
-import type { TraceEnvelope } from '@ico/types';
 import type { Database } from 'better-sqlite3';
+
+import type { TraceEnvelope } from '@ico/types';
+import { err, ok, type Result } from '@ico/types';
 
 import { redactSecrets } from './config.js';
 

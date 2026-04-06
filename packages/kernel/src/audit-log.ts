@@ -1,7 +1,7 @@
 import { appendFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { ok, err, type Result } from '@ico/types';
+import { err, ok, type Result } from '@ico/types';
 
 /**
  * Append a single audit log entry to `audit/log.md` inside the workspace.

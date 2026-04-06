@@ -4,12 +4,12 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { closeDatabase, initDatabase } from './state.js';
 import type { Database } from './state.js';
-import { initWorkspace } from './workspace.js';
-import { readTraces } from './traces.js';
-import { createTask, transitionTask, getTask, listTasks } from './tasks.js';
+import { closeDatabase, initDatabase } from './state.js';
 import type { TaskRecord } from './tasks.js';
+import { createTask, getTask, listTasks,transitionTask } from './tasks.js';
+import { readTraces } from './traces.js';
+import { initWorkspace } from './workspace.js';
 
 // ---------------------------------------------------------------------------
 // Fixtures

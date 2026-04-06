@@ -23,25 +23,25 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { closeDatabase, initDatabase } from '../state.js';
-import type { Database } from '../state.js';
-import { initWorkspace } from '../workspace.js';
+import { appendAuditLog } from '../audit-log.js';
+import { redactSecrets } from '../config.js';
 import { registerMount } from '../mounts.js';
-import {
-  computeFileHash,
-  isSourceChanged,
-  registerSource,
-} from '../sources.js';
 import {
   getDerivations,
   getProvenance,
   recordProvenance,
 } from '../provenance.js';
-import { readTraces, writeTrace } from '../traces.js';
+import {
+  computeFileHash,
+  isSourceChanged,
+  registerSource,
+} from '../sources.js';
+import type { Database } from '../state.js';
+import { closeDatabase, initDatabase } from '../state.js';
 import { createTask, getTask, listTasks, transitionTask } from '../tasks.js';
+import { readTraces, writeTrace } from '../traces.js';
 import { rebuildWikiIndex } from '../wiki-index.js';
-import { appendAuditLog } from '../audit-log.js';
-import { redactSecrets } from '../config.js';
+import { initWorkspace } from '../workspace.js';
 
 // ---------------------------------------------------------------------------
 // Shared fixture helpers
@@ -508,7 +508,7 @@ describe('secret redaction in traces', () => {
     if (!result.ok) return;
 
     // Returned envelope must already be redacted.
-    const payload = result.value.payload as Record<string, unknown>;
+    const payload = result.value.payload;
     expect(payload['apiKey']).toBe('[REDACTED]');
     expect(payload['model']).toBe('claude-opus-4-6');
 

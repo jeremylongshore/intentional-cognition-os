@@ -5,10 +5,10 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { closeDatabase, initDatabase } from './state.js';
 import type { Database } from './state.js';
-import { readTraces, writeTrace } from './traces.js';
+import { closeDatabase, initDatabase } from './state.js';
 import type { TraceRecord } from './traces.js';
+import { readTraces, writeTrace } from './traces.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -134,7 +134,7 @@ describe('writeTrace — payload secret redaction', () => {
     if (!result.ok) return;
 
     // The returned envelope should already have the redacted value.
-    const payload = result.value.payload as Record<string, unknown>;
+    const payload = result.value.payload;
     expect(payload['apiKey']).toBe('[REDACTED]');
     expect(payload['model']).toBe('claude-3');
 
@@ -153,7 +153,7 @@ describe('writeTrace — payload secret redaction', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
-    const payload = result.value.payload as Record<string, unknown>;
+    const payload = result.value.payload;
     expect(payload['token']).toBe('[REDACTED]');
   });
 });

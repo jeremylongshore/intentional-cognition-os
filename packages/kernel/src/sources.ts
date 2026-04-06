@@ -11,8 +11,8 @@ import { readFileSync } from 'node:fs';
 
 import type { Database } from 'better-sqlite3';
 
-import { ok, err, type Result } from '@ico/types';
-import { SourceSchema, type Source } from '@ico/types';
+import { err, ok, type Result } from '@ico/types';
+import { type Source,SourceSchema } from '@ico/types';
 
 // ---------------------------------------------------------------------------
 // Types

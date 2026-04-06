@@ -9,7 +9,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ok, err, type Result } from '@ico/types';
+
+import { err, ok, type Result } from '@ico/types';
 
 // better-sqlite3 uses `export = Database` (CJS-style). With verbatimModuleSyntax
 // and esModuleInterop:false, a direct ESM import of the constructor is not

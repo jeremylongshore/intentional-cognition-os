@@ -23,7 +23,7 @@ import { join } from 'node:path';
 
 import type { Database } from 'better-sqlite3';
 
-import { ok, err, type Result } from '@ico/types';
+import { err, ok, type Result } from '@ico/types';
 
 import { writeTrace } from './traces.js';
 
