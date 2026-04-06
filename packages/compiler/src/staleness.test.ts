@@ -8,7 +8,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { closeDatabase, initDatabase, type Database } from '@ico/kernel';
+import { closeDatabase, type Database,initDatabase } from '@ico/kernel';
 
 import { detectStalePages, getUncompiledSources, markStale } from './staleness.js';
 

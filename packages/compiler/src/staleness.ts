@@ -11,7 +11,6 @@
  */
 
 import type { Database } from '@ico/kernel';
-
 import { err, ok, type Result } from '@ico/types';
 
 // ---------------------------------------------------------------------------

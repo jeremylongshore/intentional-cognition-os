@@ -16,12 +16,12 @@ import {
   ConceptFrontmatterSchema,
   ContradictionFrontmatterSchema,
   EntityFrontmatterSchema,
-  OpenQuestionFrontmatterSchema,
-  SourceSummaryFrontmatterSchema,
-  TopicFrontmatterSchema,
   err,
   ok,
+  OpenQuestionFrontmatterSchema,
   type Result,
+  SourceSummaryFrontmatterSchema,
+  TopicFrontmatterSchema,
 } from '@ico/types';
 
 // ---------------------------------------------------------------------------

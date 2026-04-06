@@ -105,7 +105,7 @@ export interface ClaudeClient {
  */
 function sanitizeApiError(raw: unknown): Error {
   if (raw instanceof APIError) {
-    const status = raw.status ?? 0;
+    const status = (raw as { status?: number }).status ?? 0;
     let category: string;
 
     if (status === 401) {

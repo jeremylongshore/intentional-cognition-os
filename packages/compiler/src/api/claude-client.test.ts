@@ -9,10 +9,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  type CompletionResult,
   createClaudeClient,
   estimateTokens,
   sanitizeForPrompt,
-  type CompletionResult,
 } from './claude-client.js';
 
 // ---------------------------------------------------------------------------
