@@ -9,6 +9,7 @@
 
 import { copyFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { basename, extname, join, relative } from 'node:path';
+import { createInterface } from 'node:readline';
 
 import type { Command } from 'commander';
 
@@ -21,6 +22,7 @@ import {
   registerSource,
   writeTrace,
 } from '@ico/kernel';
+import { ingestSource } from '@ico/compiler';
 import type { Source } from '@ico/types';
 
 import { formatError, formatInfo, formatJSON, formatSuccess, formatWarning } from '../lib/output.js';
@@ -311,6 +313,56 @@ function printHumanOutput(displayName: string, result: IngestResult): void {
 }
 
 // ---------------------------------------------------------------------------
+// Confirmation helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Prompt the user with a yes/no question and return `true` unless the answer
+ * is 'n' or 'N'.  Returns `false` immediately when stdin is not a TTY.
+ *
+ * @param message - The prompt string (should end with a trailing space).
+ */
+async function confirm(message: string): Promise<boolean> {
+  if (!process.stdin.isTTY) return false;
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise(resolve => {
+    rl.question(message, answer => {
+      rl.close();
+      resolve(answer.toLowerCase() !== 'n');
+    });
+  });
+}
+
+/**
+ * Display a metadata preview for a file about to be ingested.
+ *
+ * @param filePath - Path to the source file.
+ * @param type     - Detected source type.
+ * @param fileSize - File size in bytes.
+ */
+async function showPreview(filePath: string, type: SourceType, fileSize: number): Promise<void> {
+  const adapterResult = await ingestSource(filePath, type);
+
+  const title = adapterResult.ok ? (adapterResult.value.metadata.title ?? '(untitled)') : '(untitled)';
+  const author = adapterResult.ok ? (adapterResult.value.metadata.author ?? '') : '';
+  const wordCount = adapterResult.ok ? adapterResult.value.metadata.wordCount : 0;
+  const estTokens = Math.round(wordCount * 1.33 / 4) * 4;
+  const sizeMb = (fileSize / (1024 * 1024)).toFixed(1);
+
+  process.stdout.write('\n');
+  process.stdout.write(formatInfo(`Source:      ${basename(filePath)}`) + '\n');
+  process.stdout.write(formatInfo(`Type:        ${type}`) + '\n');
+  process.stdout.write(formatInfo(`Title:       ${title}`) + '\n');
+  if (author) {
+    process.stdout.write(formatInfo(`Author:      ${author}`) + '\n');
+  }
+  process.stdout.write(formatInfo(`Words:       ~${wordCount.toLocaleString()}`) + '\n');
+  process.stdout.write(formatInfo(`Size:        ${sizeMb} MB`) + '\n');
+  process.stdout.write(formatInfo(`Est. tokens: ~${estTokens.toLocaleString()}`) + '\n');
+  process.stdout.write('\n');
+}
+
+// ---------------------------------------------------------------------------
 // Commander registration
 // ---------------------------------------------------------------------------
 
@@ -326,9 +378,10 @@ export function register(program: Command): void {
     .option('--title <title>', 'Source title')
     .option('--author <author>', 'Source author')
     .option('--force', 'Override size limits')
-    .addHelpText('after', '\nExamples:\n  $ ico ingest paper.pdf\n  $ ico ingest notes.md --title "Meeting Notes" --author "Jeremy"')
-    .action((filePath: string, opts: IngestOptions, cmd: Command) => {
-      const globalOpts = cmd.optsWithGlobals<GlobalOptions & IngestOptions>();
+    .option('--yes', 'Skip confirmation prompt')
+    .addHelpText('after', '\nExamples:\n  $ ico ingest paper.pdf\n  $ ico ingest notes.md --title "Meeting Notes" --author "Jeremy"\n  $ ico ingest paper.pdf --yes')
+    .action(async (filePath: string, opts: IngestOptions & { yes?: boolean }, cmd: Command) => {
+      const globalOpts = cmd.optsWithGlobals<GlobalOptions & IngestOptions & { yes?: boolean }>();
 
       const ingestOpts: IngestOptions = {
         ...(opts.title !== undefined && { title: opts.title }),
@@ -341,6 +394,39 @@ export function register(program: Command): void {
         ...(globalOpts.verbose !== undefined && { verbose: globalOpts.verbose }),
         ...(globalOpts.workspace !== undefined && { workspace: globalOpts.workspace }),
       };
+
+      const skipConfirm = opts.yes === true || globalOpts.yes === true;
+
+      if (!skipConfirm) {
+        // Detect type early so we can pass it to the preview helper.
+        if (!existsSync(filePath)) {
+          process.stderr.write(formatError(`File not found: ${filePath}`) + '\n');
+          process.exit(1);
+        }
+
+        let fileSize = 0;
+        try {
+          fileSize = statSync(filePath).size;
+        } catch {
+          // Non-fatal — preview will still show without accurate size.
+        }
+
+        const previewType = detectSourceType(filePath);
+        await showPreview(filePath, previewType, fileSize);
+
+        if (!process.stdin.isTTY) {
+          process.stderr.write(
+            formatError('Non-TTY input detected. Use --yes to bypass confirmation.') + '\n',
+          );
+          process.exit(1);
+        }
+
+        const confirmed = await confirm('Proceed? [Y/n] ');
+        if (!confirmed) {
+          process.stdout.write(formatWarning('Aborted.') + '\n');
+          return;
+        }
+      }
 
       const result = runIngest(filePath, ingestOpts, global);
       if (!result.ok) {

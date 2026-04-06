@@ -23,6 +23,7 @@ import {
   dim,
   formatHeader,
   formatJSON,
+  formatTable,
 } from '../lib/output.js';
 
 // ---------------------------------------------------------------------------
@@ -204,6 +205,42 @@ export function collectStatusData(db: import('@ico/kernel').Database): StatusDat
 }
 
 // ---------------------------------------------------------------------------
+// Sources table rendering
+// ---------------------------------------------------------------------------
+
+/**
+ * Render a detailed table of all ingested sources.
+ *
+ * @param sources - Array of {@link Source} rows from the kernel.
+ * @returns A formatted string ready to print.
+ */
+export function renderSourcesTable(sources: Source[]): string {
+  const lines: string[] = [];
+  lines.push(formatHeader('Sources'));
+  lines.push('');
+
+  if (sources.length === 0) {
+    lines.push('  No sources ingested yet.');
+    return lines.join('\n');
+  }
+
+  const rows = sources.map(s => [
+    s.type,
+    s.title ?? '(untitled)',
+    s.hash.slice(0, 8),
+    s.ingested_at.slice(0, 10),
+  ]);
+
+  // Indent each line of the table by two spaces for visual alignment.
+  const table = formatTable(['Type', 'Title', 'Hash (short)', 'Ingested'], rows);
+  for (const line of table.split('\n')) {
+    lines.push(`  ${line}`);
+  }
+
+  return lines.join('\n');
+}
+
+// ---------------------------------------------------------------------------
 // Command registration
 // ---------------------------------------------------------------------------
 
@@ -211,8 +248,9 @@ export function register(program: Command): void {
   program
     .command('status')
     .description('Show workspace status')
-    .addHelpText('after', '\nExamples:\n  $ ico status\n  $ ico status --json')
-    .action(() => {
+    .option('--sources', 'Show detailed sources table')
+    .addHelpText('after', '\nExamples:\n  $ ico status\n  $ ico status --json\n  $ ico status --sources')
+    .action((opts: { sources?: boolean }) => {
       const globalOpts = program.opts<{ workspace?: string; json?: boolean }>();
       const dbPath = resolveWorkspaceDb(globalOpts);
 
@@ -223,6 +261,19 @@ export function register(program: Command): void {
       const db = dbResult.value;
 
       try {
+        if (opts.sources === true) {
+          const sourcesResult = listSources(db);
+          if (!sourcesResult.ok) {
+            throw new Error(`Failed to read sources: ${sourcesResult.error.message}`);
+          }
+          if (globalOpts.json === true) {
+            console.log(formatJSON(sourcesResult.value));
+          } else {
+            console.log(renderSourcesTable(sourcesResult.value));
+          }
+          return;
+        }
+
         const data = collectStatusData(db);
 
         if (globalOpts.json === true) {

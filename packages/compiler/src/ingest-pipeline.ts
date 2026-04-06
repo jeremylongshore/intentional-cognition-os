@@ -93,6 +93,11 @@ export interface IngestPipelineResult {
    * In this case the file is not re-copied and no new records are written.
    */
   alreadyIngested: boolean;
+  /**
+   * `true` when the same path was previously ingested with a different hash.
+   * A new source record is created for the updated content.
+   */
+  reingested?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -263,6 +268,16 @@ export async function runIngestPipeline(
       });
     }
 
+    // Determine whether this is a re-ingest (same path, different hash) by
+    // checking if any prior record exists at the canonical path.
+    const allSourcesResult = listSources(db);
+    if (!allSourcesResult.ok) {
+      return err(allSourcesResult.error);
+    }
+    const oldRecord = allSourcesResult.value.find(s => s.path === relPath);
+    const isReingest = oldRecord !== undefined;
+    const oldHash = oldRecord?.hash;
+
     // 9. Atomic copy to raw/<subdir>/<slug>.
     const destDir = resolve(options.workspacePath, 'raw', subdir);
     try {
@@ -313,21 +328,23 @@ export async function runIngestPipeline(
     }
 
     // 12. Write trace event.
-    const traceResult = writeTrace(db, options.workspacePath, 'source.ingest', {
-      sourceId: source.id,
-      path: relPath,
-      hash,
-      type,
-    });
+    const traceEventType = isReingest ? 'source.reingest' : 'source.ingest';
+    const tracePayload = isReingest
+      ? { sourceId: source.id, path: relPath, oldHash, newHash: hash }
+      : { sourceId: source.id, path: relPath, hash, type };
+    const traceResult = writeTrace(db, options.workspacePath, traceEventType, tracePayload);
     if (!traceResult.ok) {
       return err(traceResult.error);
     }
 
     // 13. Append audit log entry.
+    const auditMessage = isReingest
+      ? `Re-ingested ${basename(filePath)} (updated content)`
+      : `Ingested ${basename(filePath)}`;
     const auditResult = appendAuditLog(
       options.workspacePath,
-      'source.ingest',
-      `Ingested ${basename(filePath)}`,
+      traceEventType,
+      auditMessage,
     );
     if (!auditResult.ok) {
       return err(auditResult.error);
@@ -342,6 +359,7 @@ export async function runIngestPipeline(
       title: metadata.title,
       wordCount: metadata.wordCount,
       alreadyIngested: false,
+      ...(isReingest && { reingested: true }),
     });
   } finally {
     // 14. Always close the database.

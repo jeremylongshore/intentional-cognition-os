@@ -158,7 +158,56 @@ describe('runIngestPipeline', () => {
   });
 
   // -------------------------------------------------------------------------
-  // 3. File not found
+  // 3. Re-ingest detection (same path, different hash)
+  // -------------------------------------------------------------------------
+
+  it('sets reingested: true and creates a new source record when content changes', async () => {
+    const filePath = writeSource(env.sourceDir, 'evolving.md', '# Version 1\n\nOriginal content.\n');
+
+    // First ingest — new file.
+    const first = await runIngestPipeline(filePath, makeOptions(env));
+    expect(first.ok).toBe(true);
+    if (!first.ok) return;
+    expect(first.value.alreadyIngested).toBe(false);
+    expect(first.value.reingested).toBeUndefined();
+
+    // Overwrite the file with different content.
+    writeFileSync(filePath, '# Version 2\n\nUpdated content with more words here.\n');
+
+    // Second ingest — changed content.
+    const second = await runIngestPipeline(filePath, makeOptions(env));
+    expect(second.ok).toBe(true);
+    if (!second.ok) return;
+
+    expect(second.value.alreadyIngested).toBe(false);
+    expect(second.value.reingested).toBe(true);
+    expect(second.value.hash).not.toBe(first.value.hash);
+    expect(second.value.path).toBe(first.value.path);
+
+    // Both source records should exist (different hashes = different rows).
+    const db = initDatabase(env.dbPath);
+    expect(db.ok).toBe(true);
+    if (!db.ok) return;
+    try {
+      const sources = listSources(db.value);
+      expect(sources.ok).toBe(true);
+      if (!sources.ok) return;
+
+      const recordsAtPath = sources.value.filter(s => s.path === first.value.path);
+      expect(recordsAtPath.length).toBe(2);
+
+      // A source.reingest trace event should exist.
+      const traces = readTraces(db.value, { eventType: 'source.reingest' });
+      expect(traces.ok).toBe(true);
+      if (!traces.ok) return;
+      expect(traces.value.length).toBeGreaterThanOrEqual(1);
+    } finally {
+      closeDatabase(db.value);
+    }
+  });
+
+  // -------------------------------------------------------------------------
+  // 4. File not found
   // -------------------------------------------------------------------------
 
   it('returns err when the file does not exist', async () => {
