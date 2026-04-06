@@ -28,7 +28,7 @@ export function appendAuditLog(
 
   const timestamp = new Date().toISOString();
   const sanitizedOp = operation.replace(/\|/g, '\\|');
-  const sanitizedSummary = summary.replace(/\|/g, '\\|');
+  const sanitizedSummary = summary.replace(/\|/g, '\\|').replace(/[\n\r]/g, ' ');
   const row = `| ${timestamp} | ${sanitizedOp} | ${sanitizedSummary} |\n`;
 
   try {

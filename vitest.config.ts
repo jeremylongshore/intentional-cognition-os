@@ -7,14 +7,8 @@ import { defineConfig } from 'vitest/config';
  * Individual package `pnpm test` commands continue to run per-package via
  * `pnpm -r test` and do not require this file.
  *
- * Coverage thresholds are configured at their target values but currently
- * set to 0 (reporting-only mode) because packages are scaffolds. Raise each
- * threshold to its target once the package reaches that coverage level:
- *
- *   packages/types    target: 100% (statements/branches/functions/lines)
- *   packages/kernel   target:  90%
- *   packages/compiler target:  80%
- *   packages/cli      target:  70%
+ * Coverage thresholds enforce minimum coverage per package.
+ * Raise thresholds as packages mature.
  */
 export default defineConfig({
   test: {

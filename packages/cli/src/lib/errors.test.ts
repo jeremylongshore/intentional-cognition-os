@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 
 import {
   ConfigError,
@@ -145,14 +145,11 @@ describe('ValidationError', () => {
 // ---------------------------------------------------------------------------
 
 describe('handleError', () => {
-  type ErrorSpy = ReturnType<typeof vi.spyOn<typeof console, 'error'>>;
-  type ExitSpy = ReturnType<typeof vi.spyOn<typeof process, 'exit'>>;
-
-  let exitSpy: ExitSpy;
-  let stderrSpy: ErrorSpy;
+  let exitSpy: MockInstance;
+  let stderrSpy: MockInstance;
 
   function getStderrOutput(): string[] {
-    return stderrSpy.mock.calls.map((c) => String(c[0]));
+    return stderrSpy.mock.calls.map((c: unknown[]) => String(c[0]));
   }
 
   beforeEach(() => {

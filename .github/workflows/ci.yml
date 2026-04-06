@@ -10,27 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  install:
-    name: Install
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
   lint:
     name: Lint
-    needs: install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,7 +36,6 @@ jobs:
 
   typecheck:
     name: Typecheck
-    needs: install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -80,7 +60,6 @@ jobs:
 
   audit:
     name: Security Audit
-    needs: install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -111,7 +90,6 @@ jobs:
 
   test:
     name: Test
-    needs: [install]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

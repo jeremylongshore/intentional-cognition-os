@@ -39,11 +39,15 @@ export function redactSecrets(obj: Record<string, unknown>): Record<string, unkn
     } else if (typeof value === 'string' && SECRET_PATTERNS.some(p => p.test(value))) {
       result[key] = '[REDACTED]';
     } else if (Array.isArray(value)) {
-      result[key] = (value as unknown[]).map((item): unknown =>
-        typeof item === 'object' && item !== null
-          ? redactSecrets(item as Record<string, unknown>)
-          : item
-      );
+      result[key] = (value as unknown[]).map((item): unknown => {
+        if (typeof item === 'string' && SECRET_PATTERNS.some(p => p.test(item))) {
+          return '[REDACTED]';
+        }
+        if (typeof item === 'object' && item !== null) {
+          return redactSecrets(item as Record<string, unknown>);
+        }
+        return item;
+      });
     } else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       result[key] = redactSecrets(value as Record<string, unknown>);
     } else {
@@ -79,6 +83,12 @@ function loadEnvFile(dir: string): Record<string, string> {
   }
 }
 
+const VALID_LOG_LEVELS = new Set<string>(['debug', 'info', 'warn', 'error']);
+
+function isValidLogLevel(level: unknown): level is IcoConfig['logLevel'] {
+  return typeof level === 'string' && VALID_LOG_LEVELS.has(level);
+}
+
 /**
  * Load ICO configuration from environment variables and .env file.
  * API key is stored as a non-enumerable property.
@@ -99,7 +109,7 @@ export function loadConfig(cwd: string = process.cwd()): IcoConfig {
     workspace: env['ICO_WORKSPACE'] ?? './workspace',
     model: env['ICO_MODEL'] ?? 'claude-sonnet-4-6',
     researchModel: env['ICO_RESEARCH_MODEL'] ?? 'claude-opus-4-6',
-    logLevel: (env['ICO_LOG_LEVEL'] ?? 'info') as IcoConfig['logLevel'],
+    logLevel: isValidLogLevel(env['ICO_LOG_LEVEL']) ? env['ICO_LOG_LEVEL'] : 'info',
   };
 
   // Make apiKey non-enumerable so JSON.stringify(config) never includes it
