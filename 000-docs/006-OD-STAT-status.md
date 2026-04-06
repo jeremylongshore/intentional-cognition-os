@@ -2,28 +2,29 @@
 
 > Compile knowledge for the machine. Distill understanding for the human.
 
-**Last Updated:** 2026-04-05
+**Last Updated:** 2026-04-06
 
 ## Current State
 
-**Repo status:** Governance complete. Architecture stabilized at blueprint v2.2. No application code yet — all `pnpm` scripts are stubs. Phase 1 implementation has not started.
+**Repo status:** Standards frozen (Epic 1 complete). Architecture stabilized at blueprint v2.2. No application code yet — all `pnpm` scripts are stubs. Epic 2 (Repo Foundation) is next.
 
 **What exists:**
 - [x] Master blueprint v2.2 (16 sections, including learning model and schema contract)
 - [x] Enterprise documentation suite (8 docs in `000-docs/`)
+- [x] 14 frozen standards documents (008–021 in `000-docs/`)
 - [x] Repo governance (21 files — CONTRIBUTING, SECURITY, CODE_OF_CONDUCT, etc.)
-- [x] CI/CD operational (lint, typecheck, test jobs + auto-release workflow)
-- [x] v0.1.2 released (governance + docs only, no runtime)
-- [x] Idea changelog tracking blueprint evolution (v1.0 → v2.0 → v2.1 → v2.2)
+- [x] CI/CD operational (lint, typecheck, test jobs + auto-release + Gemini PR review)
+- [x] v0.1.3 released (governance + docs only, no runtime)
+- [x] Idea changelog tracking blueprint evolution (v1.0 → v2.0 → v2.1 → v2.2 → Standards Freeze v1)
 
 **What does not exist yet:**
-- [ ] pnpm workspace with packages (`kernel/`, `cli/`, `compiler/`)
+- [ ] pnpm workspace with packages (`packages/kernel/`, `packages/cli/`, `packages/compiler/`, `packages/types/`)
 - [ ] Any TypeScript source code
-- [ ] SQLite state schema
+- [ ] SQLite state database
 - [ ] Working CLI commands
 - [ ] Tests beyond CI stub passes
 
-The current release (v0.1.2) is a documentation release. It proves the governance and architectural planning are done. It does not prove the operating loop works.
+The current release (v0.1.3) is a documentation release. Standards are frozen — every later epic references these artifacts for schema definitions, coding conventions, and quality standards.
 
 ## Learning Stance
 
@@ -40,8 +41,9 @@ This does not add new build scope. Context learning happens naturally through op
 ## Current Phase
 
 **Phase 0 — Governance & Scaffolding** — Complete.
+**Epic 1 — Canonical Design Pack** — Complete (14 standards frozen).
 
-**Next: Phase 1 — Local Foundation** — Not started.
+**Next: Epic 2 — Repo Foundation** — Ready to start.
 
 ## Phase Plan
 
@@ -61,7 +63,7 @@ This does not add new build scope. Context learning happens naturally through op
 | Blueprint is over-specified for a project with no code | Architecture may drift during implementation as real constraints emerge | Treat blueprint as living doc; update when implementation contradicts design |
 | All CI scripts are stubs (`echo "No X configured yet"`) | CI passes vacuously — no actual quality gate until real tests exist | First Phase 1 task: replace stubs with real tooling before writing features |
 | Compiler pass quality depends entirely on prompt engineering | Summarize/Extract/Synthesize output quality is unknown until tested on real sources | Phase 1 should include manual evaluation of compilation output on 3-5 diverse sources before scaling |
-| No frontmatter schemas defined yet | Blueprint v2.1+ references schema conformance but schemas don't exist | Define schemas as first compiler task, before implementing passes |
+| ~~No frontmatter schemas defined yet~~ | ~~Resolved~~ — 009-AT-FMSC defines all 7 page type schemas | Epic 1 delivered frozen frontmatter schemas |
 
 ## Next Steps (Phase 1)
 
@@ -92,8 +94,9 @@ This does not add new build scope. Context learning happens naturally through op
 | Open Issues | <10 | 0 |
 | Governance Files | 21 | 21 |
 | Enterprise Docs | 8 | 8 |
+| Standards Docs | 14 | 14 (frozen) |
 | Blueprint Version | — | v2.2.0 |
-| Software Release | — | v0.1.2 (docs only) |
+| Software Release | — | v0.1.3 (docs only) |
 
 ## Decision Log
 
