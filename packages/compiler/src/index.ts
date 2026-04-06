@@ -17,3 +17,11 @@ export {
   getUncompiledSources,
   type StalePageInfo,
 } from './staleness.js';
+export {
+  createClaudeClient,
+  estimateTokens,
+  sanitizeForPrompt,
+  type ClaudeClient,
+  type CompletionOptions,
+  type CompletionResult,
+} from './api/claude-client.js';
