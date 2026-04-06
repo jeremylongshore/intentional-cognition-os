@@ -17,7 +17,7 @@ import {
   renameSync,
   statSync,
 } from 'node:fs';
-import { basename, dirname, extname, join, resolve } from 'node:path';
+import { basename, dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
 
 import {
   appendAuditLog,
@@ -184,8 +184,8 @@ export async function runIngestPipeline(
   // The resolved symlink target must remain inside the original file's parent
   // directory to prevent directory-traversal attacks via symlinks.
   const parentDir = dirname(resolve(filePath));
-  const resolvedParent = dirname(resolvedPath);
-  if (!resolvedParent.startsWith(parentDir)) {
+  const rel = relative(parentDir, resolvedPath);
+  if (rel.startsWith('..') || isAbsolute(rel)) {
     return err(
       new Error(
         `Symlink escape detected: "${filePath}" resolves outside its parent directory`,
@@ -247,18 +247,22 @@ export async function runIngestPipeline(
     }
 
     if (!changedResult.value) {
-      // Already ingested — retrieve the existing record to populate the result.
-      const sourcesResult = listSources(db);
-      if (!sourcesResult.ok) {
-        return err(sourcesResult.error);
+      // Already ingested — call registerSource which is idempotent on (path, hash)
+      // and returns the existing record, giving us a guaranteed valid sourceId.
+      const existingResult = registerSource(db, {
+        path: relPath,
+        type,
+        hash,
+        wordCount: metadata.wordCount,
+        ...(metadata.title !== null && { title: metadata.title }),
+        ...(metadata.author !== null && { author: metadata.author }),
+      });
+      if (!existingResult.ok) {
+        return err(existingResult.error);
       }
 
-      const existing = sourcesResult.value.find(
-        s => s.path === relPath && s.hash === hash,
-      );
-
       return ok({
-        sourceId: existing?.id ?? '',
+        sourceId: existingResult.value.id,
         path: relPath,
         type,
         hash,
