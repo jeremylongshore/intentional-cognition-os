@@ -115,7 +115,7 @@ export function ingestMarkdown(filePath: string): Result<IngestResult, Error> {
   const fmDate =
     typeof frontmatter['date'] === 'string' ? frontmatter['date'] : null;
   const fmTags = Array.isArray(frontmatter['tags'])
-    ? (frontmatter['tags'] as string[])
+    ? (frontmatter['tags'])
     : [];
 
   const title = fmTitle !== null && fmTitle !== '' ? fmTitle : firstHeading(body);
