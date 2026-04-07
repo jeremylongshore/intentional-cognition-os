@@ -15,6 +15,7 @@ import { register as registerRecall } from './commands/recall.js';
 import { register as registerRender } from './commands/render.js';
 import { register as registerResearch } from './commands/research.js';
 import { register as registerStatus } from './commands/status.js';
+import { register as registerUnpromote } from './commands/unpromote.js';
 
 export function buildProgram(): Command {
   const p = new Command();
@@ -48,6 +49,7 @@ export function buildProgram(): Command {
   registerStatus(p);
   registerEval(p);
   registerInspect(p);
+  registerUnpromote(p);
 
   return p;
 }

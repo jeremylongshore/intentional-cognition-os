@@ -58,6 +58,25 @@ export {
   type PromotionType,
 } from './promotion.js';
 
+// Post-promotion
+export {
+  runPostPromotionRefresh,
+  type LintIssue,
+  type PostPromotionResult,
+} from './post-promote.js';
+
+// Unpromote
+export {
+  unpromoteArtifact,
+  UnpromoteError,
+  type UnpromoteErrorCode,
+  type UnpromoteInput,
+  type UnpromoteResult,
+} from './unpromote.js';
+
+// Artifacts
+export { listArtifacts, type ArtifactInfo } from './artifacts.js';
+
 // Configuration
 export { loadConfig, redactSecrets, type IcoConfig } from './config.js';
 export { Logger, createLogger } from './logger.js';

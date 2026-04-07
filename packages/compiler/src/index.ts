@@ -92,3 +92,14 @@ export {
   type RenderSlidesResult,
   type SlideSource,
 } from './render/slides.js';
+export {
+  validateArtifact,
+  validateAllArtifacts,
+  type ArtifactFrontmatter,
+  type ArtifactValidation,
+} from './render/artifact-meta.js';
+export {
+  gatherTaskOutput,
+  type TaskOutput,
+  type TaskOutputSource,
+} from './render/task-renderer.js';

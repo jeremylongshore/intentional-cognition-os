@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ['@anthropic-ai/sdk'],
+  external: ['@anthropic-ai/sdk', 'gray-matter'],
 });

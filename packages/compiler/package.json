@@ -23,13 +23,13 @@
     "@anthropic-ai/sdk": "^0.82.0",
     "@ico/kernel": "workspace:*",
     "@ico/types": "workspace:*",
+    "gray-matter": "^4.0.3",
     "pdf-parse": "^2.4.5",
     "turndown": "^7.2.4"
   },
   "devDependencies": {
     "@types/node": "^25.5.2",
     "@types/turndown": "^5.0.6",
-    "gray-matter": "^4.0.3",
     "tsup": "^8.4.0",
     "typescript": "^5.8.0",
     "vitest": "^4.1.2"
