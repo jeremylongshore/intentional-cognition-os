@@ -132,7 +132,8 @@ export async function runAsk(
 
   if (!wsResult.ok) {
     process.stderr.write(formatError(wsResult.error.message) + '\n');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const { root: wsPath, dbPath } = wsResult.value;
@@ -140,22 +141,20 @@ export async function runAsk(
   // -------------------------------------------------------------------------
   // 2. Load config and create Claude client
   // -------------------------------------------------------------------------
-  let apiKey: string;
-  let configModel: string;
+  let config: { apiKey: string; model: string };
 
   try {
-    const config = loadConfig(wsPath);
-    apiKey = config.apiKey;
-    configModel = config.model;
+    config = loadConfig(wsPath);
   } catch (e) {
     process.stderr.write(
       formatError(`Config error: ${e instanceof Error ? e.message : String(e)}`) + '\n',
     );
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
-  const model = askOptions.model ?? configModel!;
-  const client = createClaudeClient(apiKey!);
+  const model = askOptions.model ?? config.model;
+  const client = createClaudeClient(config.apiKey);
 
   // -------------------------------------------------------------------------
   // 3. Open database
@@ -163,7 +162,8 @@ export async function runAsk(
   const dbResult = initDatabase(dbPath);
   if (!dbResult.ok) {
     process.stderr.write(formatError(`Database error: ${dbResult.error.message}`) + '\n');
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const db = dbResult.value;
@@ -177,7 +177,8 @@ export async function runAsk(
       process.stderr.write(
         formatError(`Failed to create search index: ${indexCreateResult.error.message}`) + '\n',
       );
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
 
     const indexResult = indexCompiledPages(db, wsPath);
@@ -185,7 +186,8 @@ export async function runAsk(
       process.stderr.write(
         formatError(`Failed to index pages: ${indexResult.error.message}`) + '\n',
       );
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
 
     if (globalOpts.verbose === true) {
@@ -202,7 +204,8 @@ export async function runAsk(
       process.stderr.write(
         formatError(`Analysis failed: ${analysisResult.error.message}`) + '\n',
       );
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
 
     const analysis = analysisResult.value;
@@ -259,7 +262,8 @@ export async function runAsk(
       process.stderr.write(
         formatError(`Generation failed: ${generateResult.error.message}`) + '\n',
       );
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
 
     const { answer, citations, inputTokens, outputTokens } = generateResult.value;
@@ -272,7 +276,8 @@ export async function runAsk(
       process.stderr.write(
         formatError(`Verification failed: ${verifyResult.error.message}`) + '\n',
       );
-      process.exit(1);
+      process.exitCode = 1;
+      return;
     }
 
     const { verified, unverified, provenanceChain } = verifyResult.value;
