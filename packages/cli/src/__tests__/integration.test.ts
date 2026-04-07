@@ -421,10 +421,11 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     expect(result.stdout).toContain('all');
   });
 
-  it('ico ask exits 1 and stderr mentions Epic 7', () => {
+  it('ico ask exits 1 without a workspace configured', () => {
+    // ask is implemented (E7-B05); without a workspace it exits 1 with a workspace error.
     const result = run(['ask', 'what is knowledge?']);
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('Epic 7');
+    expect(result.stderr).toContain('workspace');
   });
 
   it('ico research exits 1 and stderr mentions Epic 9', () => {
@@ -439,10 +440,11 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     expect(result.stderr).toContain('Epic 8');
   });
 
-  it('ico lint exits 1 and stderr mentions Epic 7', () => {
+  it('ico lint exits 1 without a valid workspace database', () => {
+    // lint is implemented (E7-B10); without a workspace database it exits 1.
     const result = run(['lint']);
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('Epic 7');
+    expect(result.stderr).toContain('database');
   });
 
   it('ico recall exits 1 and stderr mentions Epic 9', () => {
