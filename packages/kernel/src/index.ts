@@ -47,6 +47,17 @@ export {
   type QuestionType,
 } from './search.js';
 
+// Promotion
+export {
+  promoteArtifact,
+  PromotionError,
+  VALID_PROMOTION_TYPES,
+  type PromotionErrorCode,
+  type PromotionInput,
+  type PromotionResult,
+  type PromotionType,
+} from './promotion.js';
+
 // Configuration
 export { loadConfig, redactSecrets, type IcoConfig } from './config.js';
 export { Logger, createLogger } from './logger.js';

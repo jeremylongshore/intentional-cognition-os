@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "@ico/types": "workspace:*",
-    "better-sqlite3": "^11.9.0"
+    "better-sqlite3": "^11.9.0",
+    "gray-matter": "^4.0.3"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",
