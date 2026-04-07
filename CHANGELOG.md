@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.2.0] - 2026-04-07
+
+- feat: Epic 7 — Retrieval, Ask Flow, and Citation-Aware Answers (a80e70a)
+
+
 ## [v0.1.9] - 2026-04-06
 
 - Epic 6: Knowledge Compiler Core (#7) (bfeae46)
