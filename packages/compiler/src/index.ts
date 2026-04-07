@@ -63,3 +63,18 @@ export {
   type GapOptions,
   type GapResult,
 } from './passes/gap.js';
+export {
+  analyzeQuestion,
+  type QuestionAnalysis,
+  type QuestionType,
+} from './ask/analyze.js';
+export {
+  generateAnswer,
+  type GeneratedAnswer,
+  type Citation,
+} from './ask/generate.js';
+export {
+  verifyCitations,
+  type VerificationResult,
+  type ProvenanceEntry,
+} from './ask/verify.js';

@@ -126,10 +126,11 @@ describe('stub command exit codes', () => {
     expect(result.stdout).toContain('all');
   });
 
-  it('ico ask exits 1 and mentions Epic 7', () => {
+  it('ico ask exits 1 without a workspace configured', () => {
+    // ask is implemented (E7-B05); without a workspace it exits 1 with a workspace error.
     const result = runCli(['ask', 'what is knowledge?']);
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('Epic 7');
+    expect(result.stderr).toContain('workspace');
   });
 
   it('ico research exits 1 and mentions Epic 9', () => {
@@ -144,10 +145,11 @@ describe('stub command exit codes', () => {
     expect(result.stderr).toContain('Epic 8');
   });
 
-  it('ico lint exits 1 and mentions Epic 7', () => {
+  it('ico lint exits 1 without a valid workspace database', () => {
+    // lint is implemented (E7-B10); without a workspace database it exits 1.
     const result = runCli(['lint']);
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('Epic 7');
+    expect(result.stderr).toContain('database');
   });
 
   it('ico recall exits 1 and mentions Epic 9', () => {
