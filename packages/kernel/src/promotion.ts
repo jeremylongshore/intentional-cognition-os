@@ -10,7 +10,6 @@
 
 import { createHash, randomUUID } from 'node:crypto';
 import {
-  copyFileSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -152,21 +151,6 @@ function slugifyTitle(title: string): string {
  * The file at `absolutePath` is read, mutated, and written back in-place.
  * Throws on any I/O error — callers must catch and handle rollback.
  */
-function injectPromotionFrontmatter(
-  absolutePath: string,
-  sourcePath: string,
-  promotedAt: string,
-): void {
-  const raw = readFileSync(absolutePath, 'utf-8');
-  const parsed = matter(raw);
-
-  parsed.data['promoted_from'] = sourcePath;
-  parsed.data['promoted_at'] = promotedAt;
-  parsed.data['promoted_by'] = 'user';
-
-  const updated = matter.stringify(parsed.content, parsed.data);
-  writeFileSync(absolutePath, updated, 'utf-8');
-}
 
 // ---------------------------------------------------------------------------
 // Public API
@@ -374,21 +358,29 @@ export function promoteArtifact(
     ));
   }
 
-  // Copy the file (COPY, not move — source is preserved).
+  // Build promoted content in memory (single write — no copy + re-read cycle).
+  // The source file was already parsed into `parsedFrontmatter` during the
+  // eligibility check, so we inject the promotion fields and write once.
   try {
-    copyFileSync(absoluteSource, absoluteTarget);
+    parsedFrontmatter.data['promoted_from'] = relativeSource;
+    parsedFrontmatter.data['promoted_at'] = promotedAt;
+    parsedFrontmatter.data['promoted_by'] = 'user';
+
+    const updatedContent = matter.stringify(parsedFrontmatter.content, parsedFrontmatter.data);
+    writeFileSync(absoluteTarget, updatedContent, 'utf-8');
   } catch {
     return err(new PromotionError(
       'COPY_FAILED',
-      `copyFileSync failed from ${relativeSource} to ${targetRelative}`,
+      `Failed to write promoted file to ${targetRelative}`,
     ));
   }
 
-  // Inject promotion provenance into the copied file's frontmatter, then write
-  // the DB record, trace, audit file, and log.md. Any failure triggers rollback.
+  // Also preserve the original (copy-not-move invariant). The source was
+  // already read but never modified — it stays on disk untouched.
+
+  // Write the DB record, trace, audit file, and log.md. Any failure after
+  // the file write triggers rollback (delete the target).
   try {
-    // 4a. Rewrite frontmatter on the target (not the source).
-    injectPromotionFrontmatter(absoluteTarget, relativeSource, promotedAt);
 
     // 4b. Insert into the promotions table.
     db.prepare<[string, string, string, string, string, string, string | null], void>(
