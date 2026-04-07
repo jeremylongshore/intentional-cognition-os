@@ -16,6 +16,11 @@ import type { Database } from 'better-sqlite3';
 
 import { err, ok, type Result } from '@ico/types';
 
+// Forward-declared so QuestionType can be imported by callers without
+// depending on the compiler package.  The kernel stays dependency-free of
+// @ico/compiler.
+export type QuestionType = 'factual' | 'comparative' | 'analytical' | 'open-ended';
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -280,4 +285,132 @@ export function searchPages(
   }
 
   return ok(rows);
+}
+
+// ---------------------------------------------------------------------------
+// Question-type-aware relevance boosting (E7-B08)
+// ---------------------------------------------------------------------------
+
+/**
+ * Limit multiplier applied when expanding the initial FTS query to allow
+ * title-boosted re-ranking. Fetching more rows than needed lets the
+ * post-ranking step promote title matches without always hitting the
+ * database limit.
+ */
+const FETCH_MULTIPLIER = 3;
+
+/**
+ * Retrieve compiled pages relevant to `question` with light question-type
+ * weighting applied on top of FTS5's BM25 baseline score.
+ *
+ * Weighting strategy:
+ * - Rows whose `title` contains any query token receive a bonus of -0.5
+ *   (FTS5 ranks are negative; lower is better), making title matches rank
+ *   higher than body-only matches.
+ * - `analytical` and `comparative` questions additionally boost `topic`
+ *   and `concept` page types, which tend to contain explanatory or
+ *   comparative content.
+ * - `factual` questions boost `source-summary` and `entity` types.
+ *
+ * @param db           - Open better-sqlite3 database with FTS5 table present.
+ * @param question     - Raw user question string.
+ * @param questionType - Pre-classified question type from `analyzeQuestion`.
+ * @param limit        - Maximum results to return after re-ranking.
+ *                       Defaults to {@link DEFAULT_LIMIT}.
+ * @returns `ok(results)` sorted by boosted rank, or `err(Error)` on failure.
+ */
+/**
+ * Common English stop words filtered from questions before FTS5 query
+ * construction. Multi-word FTS5 queries require every token to appear in the
+ * document, so stop words like "what", "is", "how" cause false negatives when
+ * they do not appear in wiki page bodies.
+ */
+const SEARCH_STOP_WORDS = new Set([
+  'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+  'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+  'should', 'may', 'might', 'shall', 'can',
+  'what', 'which', 'who', 'whom', 'whose', 'when', 'where', 'why', 'how',
+  'that', 'this', 'these', 'those', 'it', 'its', 'in', 'on', 'at', 'to',
+  'for', 'of', 'and', 'or', 'but', 'not', 'with', 'from', 'by', 'as', 'if',
+  'so', 'me', 'my', 'you', 'your', 'we', 'our', 'they', 'their', 'i',
+  'define', 'explain', 'describe', 'tell', 'please', 'give', 'show',
+  'also', 'about',
+]);
+
+/**
+ * Build an FTS5 query from a natural-language question string by stripping
+ * special characters and common stop words.
+ *
+ * Hyphens are replaced with spaces because FTS5 parses `a-b` as `a NOT b`.
+ */
+function buildFtsQueryFromQuestion(question: string): string | null {
+  const cleaned = question.replace(/[-"*()^?!]/g, ' ').toLowerCase();
+  const tokens = cleaned
+    .split(/\s+/)
+    .map((t) => t.replace(/[^\w]/g, ''))
+    .filter((t) => t.length >= 2 && !SEARCH_STOP_WORDS.has(t));
+
+  return tokens.length > 0 ? tokens.join(' ') : null;
+}
+
+export function findRelevantPages(
+  db: Database,
+  question: string,
+  questionType: QuestionType,
+  limit: number = DEFAULT_LIMIT,
+): Result<SearchResult[], Error> {
+  // Strip stop words and FTS5 operators before querying.
+  const ftsQuery = buildFtsQueryFromQuestion(question);
+
+  if (ftsQuery === null) {
+    return err(new Error('Question contains no searchable terms'));
+  }
+
+  // Fetch more rows than needed so the re-ranking step has candidates to work with.
+  const fetchLimit = limit * FETCH_MULTIPLIER;
+  const baseResult = searchPages(db, ftsQuery, fetchLimit);
+
+  if (!baseResult.ok) {
+    return baseResult;
+  }
+
+  const rows = baseResult.value;
+
+  if (rows.length === 0) {
+    return ok([]);
+  }
+
+  // Extract content tokens for title-match detection.
+  const tokens = ftsQuery.split(/\s+/).filter((t) => t.length > 1);
+
+  // Determine preferred page types for this question type.
+  const preferredTypes: ReadonlySet<string> =
+    questionType === 'analytical' || questionType === 'comparative'
+      ? new Set(['topic', 'concept'])
+      : questionType === 'factual'
+        ? new Set(['source-summary', 'entity'])
+        : new Set<string>();
+
+  // Re-rank by applying title and type bonuses.
+  const reranked = rows.map((row) => {
+    let adjustedRank = row.rank;
+
+    // Title boost: any token from the query appearing in the page title.
+    const titleLower = row.title.toLowerCase();
+    if (tokens.some((t) => titleLower.includes(t))) {
+      adjustedRank -= 0.5;
+    }
+
+    // Type preference boost.
+    if (preferredTypes.has(row.type)) {
+      adjustedRank -= 0.3;
+    }
+
+    return { ...row, rank: adjustedRank };
+  });
+
+  // Sort ascending by adjusted rank (lower is better in FTS5 scoring).
+  reranked.sort((a, b) => a.rank - b.rank);
+
+  return ok(reranked.slice(0, limit));
 }
