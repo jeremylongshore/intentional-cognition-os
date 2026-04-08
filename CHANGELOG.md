@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.3.0] - 2026-04-08
+
+- feat: Epic 8 — Render, Promote, and Durable Artifact Operations (#9) (87dfcce)
+
+
 ## [v0.2.0] - 2026-04-07
 
 - feat: Epic 7 — Retrieval, Ask Flow, and Citation-Aware Answers (a80e70a)
