@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Runtime**: TypeScript, Node.js 22+, pnpm 10.x
 - **CLI**: `ico`
 - **License**: MIT
-- **Current state**: Epics 1–8 complete (292 tests). Epic 9 (Multi-Agent Research) next.
+- **Current state**: Epics 1–8 complete (864 tests). Epic 9 (Multi-Agent Research) next.
 
 ## Current State
 
@@ -36,7 +36,7 @@ pnpm test:coverage                                      # Coverage report
 | `packages/types/` | Complete | Shared TypeScript interfaces, Result<T,E>, Zod schemas, frontmatter schemas |
 | `packages/kernel/` | Complete | Workspace init, SQLite state, mounts, sources, provenance, traces, tasks, wiki index, audit log, FTS5 search, promotion engine, unpromote |
 | `packages/compiler/` | Complete | 6 compiler passes, Claude API client, ingest adapters (PDF/MD/web-clip), ask pipeline, report & slide renderers, token tracking, staleness detection |
-| `packages/cli/` | Complete | 13 commands (init, mount, ingest, compile, ask, render, lint, promote, unpromote, status, inspect + stubs: research, recall, eval) |
+| `packages/cli/` | Complete | 14 commands (init, mount, ingest, compile, ask, render, lint, promote, unpromote, status, inspect, eval + stubs: research, recall) |
 | `evals/` | Not started | Evaluation specs (Epic 10) |
 
 ## Session Startup
@@ -77,7 +77,7 @@ All standards are frozen for Phase 1. Changes require an `IDEA-CHANGELOG.md` ent
 | CLI | Commander.js | Entry point at `packages/cli/src/index.ts` |
 | State DB | better-sqlite3 | Local SQLite for deterministic state |
 | AI | @anthropic-ai/sdk | Claude API for compilation/reasoning |
-| Orchestration | claude_agent_sdk | Multi-agent research (planned, Epic 9) |
+| Orchestration | claude_agent_sdk | Multi-agent research (not yet installed — planned for Epic 9) |
 | Validation | Zod | Runtime schema checking |
 | Frontmatter | gray-matter | Parsing compiled wiki pages |
 | PDF | pdf-parse | PDF text extraction in ingest adapter |
