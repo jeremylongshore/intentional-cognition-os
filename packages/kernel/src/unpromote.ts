@@ -29,10 +29,11 @@ import { rebuildWikiIndex } from './wiki-index.js';
  * Discriminated error codes for unpromote failures.
  */
 export type UnpromoteErrorCode =
-  | 'NOT_PROMOTED'        // No promotions record for this target path
-  | 'FILE_NOT_FOUND'      // Promotions record exists but file is gone
-  | 'DELETE_FAILED'       // unlinkSync or DB delete failed
-  | 'AUDIT_WRITE_FAILED'; // Trace write or audit log append failed
+  | 'NOT_PROMOTED'           // No promotions record for this target path
+  | 'FILE_NOT_FOUND'         // Promotions record exists but file is gone
+  | 'DELETE_FAILED'          // unlinkSync or DB delete failed
+  | 'AUDIT_WRITE_FAILED'    // Trace write or audit log append failed
+  | 'INDEX_REBUILD_FAILED'; // Wiki index rebuild failed after unpromote
 
 /**
  * Typed error raised by the unpromote engine.
@@ -218,7 +219,7 @@ export function unpromoteArtifact(
   const indexResult = rebuildWikiIndex(workspacePath);
   if (!indexResult.ok) {
     return err(new UnpromoteError(
-      'AUDIT_WRITE_FAILED',
+      'INDEX_REBUILD_FAILED',
       `Failed to rebuild wiki index: ${indexResult.error.message}`,
     ));
   }

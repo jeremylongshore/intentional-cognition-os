@@ -379,7 +379,7 @@ export function promoteArtifact(
   // already read but never modified — it stays on disk untouched.
 
   // Write the DB record, trace, audit file, and log.md. Any failure after
-  // the file write triggers rollback (delete the target).
+  // the file write triggers rollback (delete the target AND the DB row).
   try {
 
     // 4b. Insert into the promotions table.
@@ -442,11 +442,18 @@ export function promoteArtifact(
       throw logResult.error;
     }
   } catch (e) {
-    // Rollback: delete the copied file so the wiki remains consistent.
+    // Rollback: delete the copied file AND the DB row so the wiki remains
+    // consistent. The DB row may or may not exist depending on which step
+    // failed, so both cleanup operations are best-effort.
     try {
       if (existsSync(absoluteTarget)) {
         unlinkSync(absoluteTarget);
       }
+    } catch {
+      // Best-effort rollback — swallow secondary errors.
+    }
+    try {
+      db.prepare<[string], void>('DELETE FROM promotions WHERE id = ?').run(promotionId);
     } catch {
       // Best-effort rollback — swallow secondary errors.
     }

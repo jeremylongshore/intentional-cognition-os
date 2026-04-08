@@ -10,7 +10,7 @@
  */
 
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 import { err, ok, type Result } from '@ico/types';
 
@@ -83,12 +83,23 @@ CONSTRAINTS:
 - Begin your response directly with the ## Executive Summary heading.`;
 
 /**
+ * Escape a string for safe use inside an XML attribute value (double-quoted).
+ */
+function escapeXmlAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+/**
  * Build the user-turn prompt that wraps all source content in XML-style tags.
  */
 function buildUserPrompt(sources: ReportSource[]): string {
   const sourceBlocks = sources
     .map((s) =>
-      [`<source title="${s.title}" path="${s.path}">`, s.content, '</source>'].join('\n'),
+      [`<source title="${escapeXmlAttr(s.title)}" path="${escapeXmlAttr(s.path)}">`, s.content, '</source>'].join('\n'),
     )
     .join('\n\n');
 
@@ -240,17 +251,18 @@ export async function renderReport(
   const frontmatter = buildFrontmatter(title, sources, model, tokensUsed);
   const markdown = `${frontmatter}\n\n${content}`;
 
-  // Resolve output path.
+  // Resolve output path. If the caller provides a relative path, resolve it
+  // against the workspace root so file writes always use an absolute path.
   let outputPath: string;
   if (options.outputPath !== undefined && options.outputPath.trim() !== '') {
-    outputPath = options.outputPath;
+    outputPath = resolve(workspacePath, options.outputPath);
   } else {
     const slug = slugify(title);
     outputPath = join(workspacePath, 'outputs', 'reports', `${slug}.md`);
   }
 
   // Ensure the target directory exists.
-  const targetDir = outputPath.replace(/\/[^/]+$/, '');
+  const targetDir = dirname(outputPath);
   if (!existsSync(targetDir)) {
     try {
       mkdirSync(targetDir, { recursive: true });
