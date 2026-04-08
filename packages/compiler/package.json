@@ -23,6 +23,7 @@
     "@anthropic-ai/sdk": "^0.82.0",
     "@ico/kernel": "workspace:*",
     "@ico/types": "workspace:*",
+    "gray-matter": "^4.0.3",
     "pdf-parse": "^2.4.5",
     "turndown": "^7.2.4"
   },

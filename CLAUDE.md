@@ -7,31 +7,37 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **intentional-cognition-os** — Local-first knowledge operating system that ingests raw corpus, compiles semantic knowledge, creates episodic task workspaces, generates durable artifacts, and improves both machine reasoning and human understanding over time.
 
 - **Runtime**: TypeScript, Node.js 22+, pnpm 10.x
-- **CLI**: `ico` (planned)
+- **CLI**: `ico`
 - **License**: MIT
-- **Current state**: Epic 3 (Kernel Core) complete. Epic 4 (CLI Surface) next.
+- **Current state**: Epics 1–8 complete (292 tests). Epic 9 (Multi-Agent Research) next.
 
 ## Current State
 
-Epics 1-3 complete. The kernel is fully operational with 147 tests.
-
 ```bash
 pnpm install          # Install all workspace dependencies
-pnpm build            # Build all packages (tsup)
+pnpm build            # Build all packages (tsup, sequential --workspace-concurrency=1)
 pnpm test             # Run all tests (vitest)
 pnpm lint             # Run ESLint across all packages
 pnpm typecheck        # Run tsc --noEmit across all packages
+```
+
+### Running individual tests
+
+```bash
+cd packages/kernel && pnpm test -- promotion.test.ts   # Single file
+cd packages/cli && pnpm test -- --reporter=verbose      # Verbose output
+pnpm test:coverage                                      # Coverage report
 ```
 
 ### Packages
 
 | Package | Status | Description |
 |---------|--------|-------------|
-| `packages/types/` | Complete | Shared TypeScript interfaces and Zod schemas |
-| `packages/kernel/` | Complete | Workspace management, SQLite state, mounts, sources, provenance, traces, tasks, wiki index, audit log |
-| `packages/compiler/` | Scaffold | Knowledge compilation (Epic 6) |
-| `packages/cli/` | Scaffold | Command routing and output formatting (Epic 4) |
-| `evals/` | Not started | Evaluation specs (Epic 9) |
+| `packages/types/` | Complete | Shared TypeScript interfaces, Result<T,E>, Zod schemas, frontmatter schemas |
+| `packages/kernel/` | Complete | Workspace init, SQLite state, mounts, sources, provenance, traces, tasks, wiki index, audit log, FTS5 search, promotion engine, unpromote |
+| `packages/compiler/` | Complete | 6 compiler passes, Claude API client, ingest adapters (PDF/MD/web-clip), ask pipeline, report & slide renderers, token tracking, staleness detection |
+| `packages/cli/` | Complete | 13 commands (init, mount, ingest, compile, ask, render, lint, promote, unpromote, status, inspect + stubs: research, recall, eval) |
+| `evals/` | Not started | Evaluation specs (Epic 10) |
 
 ## Session Startup
 
@@ -64,19 +70,23 @@ All standards are frozen for Phase 1. Changes require an `IDEA-CHANGELOG.md` ent
 | 020 | [Diagram Prompts](000-docs/020-AT-DIAG-diagram-prompts.md) | Mermaid diagram prompts for 6 architectural views |
 | 021 | [Security & Scope](000-docs/021-AT-SECV-security-and-scope.md) | Injection defense, redaction, path safety, v1 deferrals |
 
-## Planned Tech Stack (from 000-docs/005-AT-SPEC)
+## Tech Stack
 
 | Purpose | Package | Notes |
 |---------|---------|-------|
 | CLI | Commander.js | Entry point at `packages/cli/src/index.ts` |
 | State DB | better-sqlite3 | Local SQLite for deterministic state |
 | AI | @anthropic-ai/sdk | Claude API for compilation/reasoning |
-| Orchestration | claude_agent_sdk | Multi-agent research (Phase 3) |
+| Orchestration | claude_agent_sdk | Multi-agent research (planned, Epic 9) |
 | Validation | Zod | Runtime schema checking |
 | Frontmatter | gray-matter | Parsing compiled wiki pages |
+| PDF | pdf-parse | PDF text extraction in ingest adapter |
+| HTML→MD | turndown | Web-clip adapter |
 | Testing | Vitest | Test runner |
-| Build | tsup | TypeScript bundling |
-| Linting | ESLint + typescript-eslint | Code quality |
+| Build | tsup | TypeScript bundling, ESM-only output |
+| Linting | ESLint 10 + typescript-eslint | Code quality, simple-import-sort |
+
+**ESM-only**: All packages use `"type": "module"` with `verbatimModuleSyntax: true`. No CommonJS.
 
 ## Architecture
 
@@ -100,17 +110,17 @@ This is the most important architectural constraint. The model proposes; the det
 - **Deterministic** (Kernel + SQLite + JSONL): file storage, mount registry, task state, provenance, policy, permissions, audit, promotion rules, eval execution
 - **Probabilistic** (Compiler + Claude API): summarization, synthesis, concept extraction, contradiction detection, question decomposition, artifact drafting, recall generation
 
-### Planned Components
+### Key Implementation Patterns
 
-| Component | Directory | Responsibility |
-|-----------|-----------|---------------|
-| Types | `packages/types/` | Shared TypeScript interfaces and Zod schemas |
-| Kernel | `packages/kernel/` | Workspace management, mount registry, state machine |
-| Compiler | `packages/compiler/` | Knowledge compilation — summarize, extract, link, diff, lint |
-| CLI | `packages/cli/` | Command routing, argument parsing, output formatting |
-| Evals | `evals/` | Evaluation specs for compilation quality |
+- **Result<T,E>**: Non-throwing error handling throughout — all fallible ops return `{ ok: true, value }` or `{ ok: false, error }`
+- **Atomic writes**: Write to `.tmp` then rename to prevent partial files on crash
+- **Dual-write provenance**: SQLite + JSONL for auditability
+- **Integrity chains**: Each trace event includes SHA-256 hash of previous event for tamper detection
+- **Secret redaction**: All trace payloads run through `redactSecrets()` before writing
+- **FTS5 search**: Full-text search over compiled wiki pages
+- **Promotion rules**: 7 validation rules + 3 anti-pattern detectors gate L4→L2 promotion
 
-### Multi-Agent Research Pattern
+### Multi-Agent Research Pattern (Epic 9)
 
 For `ico research`, the system creates a scoped episodic task workspace with: collector agents → summarizers → skeptics → integrator → renderer → optional recall generation → promote durable value back to L2 → archive workspace.
 

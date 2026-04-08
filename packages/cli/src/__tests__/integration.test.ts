@@ -434,10 +434,11 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     expect(result.stderr).toContain('Epic 9');
   });
 
-  it('ico render exits 1 and stderr mentions Epic 8', () => {
+  it('ico render report exits 1 without --topic or --task', () => {
+    // render is implemented (E8-B03); without --topic or --task it exits 1 with a usage error.
     const result = run(['render', 'report']);
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('Epic 8');
+    expect(result.stderr).toContain('required');
   });
 
   it('ico lint exits 1 without a valid workspace database', () => {
@@ -453,10 +454,11 @@ describe('ico CLI integration', { timeout: 30_000 }, () => {
     expect(result.stderr).toContain('Epic 9');
   });
 
-  it('ico promote exits 1 and stderr mentions Epic 8', () => {
+  it('ico promote exits non-zero without --as flag', () => {
+    // promote is implemented (E8-B05); without --as it exits non-zero with a usage error.
     const result = run(['promote', 'some/path']);
-    expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('Epic 8');
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr.length).toBeGreaterThan(0);
   });
 
   it('ico eval exits 1 and stderr mentions Epic 10', () => {

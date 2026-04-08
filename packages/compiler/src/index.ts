@@ -78,3 +78,28 @@ export {
   type VerificationResult,
   type ProvenanceEntry,
 } from './ask/verify.js';
+export {
+  renderReport,
+  slugify as slugifyReport,
+  type RenderReportOptions,
+  type RenderReportResult,
+  type ReportSource,
+} from './render/report.js';
+export {
+  renderSlides,
+  slugifyTitle as slugifySlides,
+  type RenderSlidesOptions,
+  type RenderSlidesResult,
+  type SlideSource,
+} from './render/slides.js';
+export {
+  validateArtifact,
+  validateAllArtifacts,
+  type ArtifactFrontmatter,
+  type ArtifactValidation,
+} from './render/artifact-meta.js';
+export {
+  gatherTaskOutput,
+  type TaskOutput,
+  type TaskOutputSource,
+} from './render/task-renderer.js';
