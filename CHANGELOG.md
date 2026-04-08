@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.3.1] - 2026-04-08
+
+- docs: fix CLAUDE.md accuracy — test count, CLI count, dep status (338ea73)
+
+
 ## [v0.3.0] - 2026-04-08
 
 - feat: Epic 8 — Render, Promote, and Durable Artifact Operations (#9) (87dfcce)
