@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.5.0] - 2026-04-09
+
+- feat(kernel): cognitive procfs + CWP adversarial review (#11) (8e1e080)
+
+
 ## [v0.4.0] - 2026-04-09
 
 - feat(cli): implement ico research command (E9-B01) (#10) (0813732)
