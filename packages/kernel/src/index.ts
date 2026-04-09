@@ -77,6 +77,17 @@ export {
 // Artifacts
 export { listArtifacts, type ArtifactInfo } from './artifacts.js';
 
+// Procfs — computed views over task state
+export {
+  computeTaskStatus,
+  renderTaskStatusMarkdown,
+  computeMemoryMap,
+  renderMemoryMapMarkdown,
+  materializeStatus,
+  type TaskStatusView,
+  type MemoryMapSection,
+} from './procfs.js';
+
 // Configuration
 export { loadConfig, redactSecrets, type IcoConfig } from './config.js';
 export { Logger, createLogger } from './logger.js';

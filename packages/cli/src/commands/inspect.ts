@@ -15,7 +15,16 @@ import { join, resolve } from 'node:path';
 import type { Command } from 'commander';
 
 import type { TraceRecord } from '@ico/kernel';
-import { closeDatabase, initDatabase, readTraces } from '@ico/kernel';
+import {
+  closeDatabase,
+  computeMemoryMap,
+  computeTaskStatus,
+  getTask,
+  initDatabase,
+  readTraces,
+  renderMemoryMapMarkdown,
+  renderTaskStatusMarkdown,
+} from '@ico/kernel';
 
 import {
   formatError,
@@ -226,6 +235,80 @@ function handleAudit(
 }
 
 // ---------------------------------------------------------------------------
+// Subcommand: task (cognitive procfs)
+// ---------------------------------------------------------------------------
+
+/**
+ * Handle `ico inspect task <id> [--proc <view>]`.
+ *
+ * Computes and displays cognitive procfs views for a task.
+ * Available views: `status` (default), `memory-map`.
+ */
+function handleTask(
+  taskId: string,
+  opts: { proc: string },
+  globalOpts: { workspace?: string; json?: boolean },
+): void {
+  const dbPath = resolveWorkspaceDb(globalOpts);
+  const workspaceRoot = resolveWorkspaceRoot(globalOpts);
+  const dbResult = initDatabase(dbPath);
+
+  if (!dbResult.ok) {
+    console.error(formatError(`Failed to open database: ${dbResult.error.message}`));
+    process.exit(1);
+  }
+
+  const db = dbResult.value;
+
+  try {
+    const view = opts.proc;
+
+    if (view === 'status') {
+      const result = computeTaskStatus(db, workspaceRoot, taskId);
+      if (!result.ok) {
+        console.error(formatError(result.error.message));
+        process.exit(1);
+      }
+
+      if (globalOpts.json === true) {
+        console.log(formatJSON(result.value));
+      } else {
+        console.log(renderTaskStatusMarkdown(result.value));
+      }
+    } else if (view === 'memory-map') {
+      // Use getTask directly — cheaper than computing full status.
+      const taskResult = getTask(db, taskId);
+      if (!taskResult.ok) {
+        console.error(formatError(taskResult.error.message));
+        process.exit(1);
+      }
+      if (taskResult.value === null) {
+        console.error(formatError(`Task not found: ${taskId}`));
+        process.exit(1);
+      }
+
+      const taskRelPath = taskResult.value.workspace_path;
+      const mmResult = computeMemoryMap(workspaceRoot, taskRelPath);
+      if (!mmResult.ok) {
+        console.error(formatError(mmResult.error.message));
+        process.exit(1);
+      }
+
+      if (globalOpts.json === true) {
+        console.log(formatJSON(mmResult.value));
+      } else {
+        console.log(renderMemoryMapMarkdown(mmResult.value));
+      }
+    } else {
+      console.error(formatError(`Unknown proc view: "${view}". Available: status, memory-map`));
+      process.exit(1);
+    }
+  } finally {
+    closeDatabase(db);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Command registration
 // ---------------------------------------------------------------------------
 
@@ -237,7 +320,7 @@ function handleAudit(
 export function register(program: Command): void {
   const inspect = program
     .command('inspect')
-    .description('Inspect traces and audit logs');
+    .description('Inspect traces, audit logs, and task state');
 
   inspect
     .command('traces')
@@ -257,5 +340,18 @@ export function register(program: Command): void {
     .action((opts: { last: string }) => {
       const globalOpts = program.opts<{ workspace?: string; json?: boolean }>();
       handleAudit(opts, globalOpts);
+    });
+
+  inspect
+    .command('task <id>')
+    .description('View computed cognitive state for a task (procfs)')
+    .option('--proc <view>', 'Computed view to display: status, memory-map', 'status')
+    .addHelpText(
+      'after',
+      '\nExamples:\n  $ ico inspect task <uuid>\n  $ ico inspect task <uuid> --proc memory-map\n  $ ico inspect task <uuid> --proc status --json',
+    )
+    .action((taskId: string, opts: { proc: string }) => {
+      const globalOpts = program.opts<{ workspace?: string; json?: boolean }>();
+      handleTask(taskId, opts, globalOpts);
     });
 }
