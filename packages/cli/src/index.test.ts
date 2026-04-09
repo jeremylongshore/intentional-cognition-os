@@ -133,10 +133,10 @@ describe('stub command exit codes', () => {
     expect(result.stderr).toContain('workspace');
   });
 
-  it('ico research exits 1 and mentions Epic 9', () => {
+  it('ico research exits 1 without a valid workspace', () => {
     const result = runCli(['research', 'brief']);
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('Epic 9');
+    expect(result.stderr).toContain('No workspace found');
   });
 
   it('ico render report exits 1 without --topic or --task', () => {
