@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.4.0] - 2026-04-09
+
+- feat(cli): implement ico research command (E9-B01) (#10) (0813732)
+
+
 ## [v0.3.1] - 2026-04-08
 
 - docs: fix CLAUDE.md accuracy — test count, CLI count, dep status (338ea73)
