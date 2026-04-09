@@ -138,9 +138,9 @@ export function register(program: Command): void {
     .action((brief: string, _opts: Record<string, unknown>, cmd: Command) => {
       const globalOpts = cmd.optsWithGlobals<GlobalOptions>();
       const global: GlobalOptions = {
-        json: globalOpts.json,
-        verbose: globalOpts.verbose,
-        workspace: globalOpts.workspace,
+        ...(globalOpts.json !== undefined && { json: globalOpts.json }),
+        ...(globalOpts.verbose !== undefined && { verbose: globalOpts.verbose }),
+        ...(globalOpts.workspace !== undefined && { workspace: globalOpts.workspace }),
       };
 
       const result = runResearch(brief, global);
