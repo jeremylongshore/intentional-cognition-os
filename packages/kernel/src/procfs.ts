@@ -190,7 +190,6 @@ export function renderTaskStatusMarkdown(view: TaskStatusView): string {
  * with sizes and names. Derived entirely from the filesystem.
  *
  * @param workspacePath - Absolute path to the workspace root.
- * @param taskId        - UUID of the task (used to locate the task dir).
  * @param taskRelPath   - Relative path to the task dir (e.g. `tasks/tsk-<id>`).
  * @returns `ok(sections[])` or `err(Error)`.
  */

@@ -19,6 +19,7 @@ import {
   closeDatabase,
   computeMemoryMap,
   computeTaskStatus,
+  getTask,
   initDatabase,
   readTraces,
   renderMemoryMapMarkdown,
@@ -275,14 +276,18 @@ function handleTask(
         console.log(renderTaskStatusMarkdown(result.value));
       }
     } else if (view === 'memory-map') {
-      // We need the task's workspace_path to compute the memory map.
-      const statusResult = computeTaskStatus(db, workspaceRoot, taskId);
-      if (!statusResult.ok) {
-        console.error(formatError(statusResult.error.message));
+      // Use getTask directly — cheaper than computing full status.
+      const taskResult = getTask(db, taskId);
+      if (!taskResult.ok) {
+        console.error(formatError(taskResult.error.message));
+        process.exit(1);
+      }
+      if (taskResult.value === null) {
+        console.error(formatError(`Task not found: ${taskId}`));
         process.exit(1);
       }
 
-      const taskRelPath = statusResult.value.workspace_path;
+      const taskRelPath = taskResult.value.workspace_path;
       const mmResult = computeMemoryMap(workspaceRoot, taskRelPath);
       if (!mmResult.ok) {
         console.error(formatError(mmResult.error.message));
