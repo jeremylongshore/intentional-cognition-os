@@ -83,16 +83,7 @@ export function runResearch(
     const task: TaskRecord = taskResult.value;
 
     // 4. Write brief.md with YAML frontmatter
-    const briefContent = [
-      '---',
-      `task_id: ${task.id}`,
-      `created_at: ${task.created_at}`,
-      `status: ${task.status}`,
-      '---',
-      '',
-      brief,
-      '',
-    ].join('\n');
+    const briefContent = `---\ntask_id: ${task.id}\ncreated_at: ${task.created_at}\nstatus: ${task.status}\n---\n\n${brief}\n`;
 
     writeFileSync(join(wsRoot, task.workspace_path, 'brief.md'), briefContent, 'utf-8');
 
@@ -147,9 +138,9 @@ export function register(program: Command): void {
     .action((brief: string, _opts: Record<string, unknown>, cmd: Command) => {
       const globalOpts = cmd.optsWithGlobals<GlobalOptions>();
       const global: GlobalOptions = {
-        ...(globalOpts.json !== undefined && { json: globalOpts.json }),
-        ...(globalOpts.verbose !== undefined && { verbose: globalOpts.verbose }),
-        ...(globalOpts.workspace !== undefined && { workspace: globalOpts.workspace }),
+        json: globalOpts.json,
+        verbose: globalOpts.verbose,
+        workspace: globalOpts.workspace,
       };
 
       const result = runResearch(brief, global);
