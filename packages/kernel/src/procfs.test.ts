@@ -65,6 +65,7 @@ describe('computeTaskStatus', () => {
 
     const view = result.value;
     expect(view.task_id).toBe(cr.value.id);
+    expect(view.workspace_path).toBe(cr.value.workspace_path);
     expect(view.phase).toBe('created');
     expect(view.brief).toBe('Test procfs status');
     expect(view.evidence_count).toBe(0);
@@ -127,6 +128,7 @@ describe('renderTaskStatusMarkdown', () => {
   it('produces valid markdown with YAML frontmatter', () => {
     const view: TaskStatusView = {
       task_id: 'abc-123',
+      workspace_path: 'tasks/tsk-abc-123',
       phase: 'collecting',
       brief: 'How does attention scale?',
       created_at: '2026-04-09T12:00:00.000Z',
@@ -155,6 +157,7 @@ describe('renderTaskStatusMarkdown', () => {
   it('escapes double quotes in brief', () => {
     const view: TaskStatusView = {
       task_id: 'def-456',
+      workspace_path: 'tasks/tsk-def-456',
       phase: 'created',
       brief: 'What does "scaling" mean?',
       created_at: '2026-04-09T12:00:00.000Z',

@@ -282,8 +282,7 @@ function handleTask(
         process.exit(1);
       }
 
-      // Derive task relative path from task_id.
-      const taskRelPath = `tasks/tsk-${taskId}`;
+      const taskRelPath = statusResult.value.workspace_path;
       const mmResult = computeMemoryMap(workspaceRoot, taskRelPath);
       if (!mmResult.ok) {
         console.error(formatError(mmResult.error.message));

@@ -28,6 +28,7 @@ import { readTraces } from './traces.js';
 /** Structured data behind a computed status view. */
 export interface TaskStatusView {
   task_id: string;
+  workspace_path: string;
   phase: string;
   brief: string;
   created_at: string;
@@ -105,19 +106,14 @@ export function computeTaskStatus(
     const task: TaskRecord = taskResult.value;
     const taskDir = join(workspacePath, task.workspace_path);
 
-    // Count transitions from trace events.
+    // Count transitions from trace events for this task.
+    // Note: traces don't currently store taskId as correlationId, so we
+    // count all task.transition events. This is accurate when only one task
+    // exists. For multi-task workspaces, Phase 2 should add taskId as
+    // correlationId to task.transition trace events for precise filtering.
     const tracesResult = readTraces(db, { eventType: 'task.transition' });
     let transitions = 0;
     if (tracesResult.ok) {
-      // readTraces returns all task.transition events; filter to this task.
-      // The payload is stored in the JSONL file, not in the SQLite index.
-      // For the index-only count, we count all task.transition events and
-      // accept the approximation when multiple tasks exist. For exact counts,
-      // we would need to read the JSONL payload — deferred to Phase 2.
-      //
-      // Precise per-task counting: read JSONL is expensive. Instead, count
-      // task.create events as a proxy for "how many tasks exist" and only
-      // count all transitions if there is exactly one task.
       transitions = tracesResult.value.length;
     }
 
@@ -132,6 +128,7 @@ export function computeTaskStatus(
 
     return ok({
       task_id: task.id,
+      workspace_path: task.workspace_path,
       phase: task.status,
       brief: task.brief,
       created_at: task.created_at,
@@ -157,6 +154,7 @@ export function renderTaskStatusMarkdown(view: TaskStatusView): string {
   return [
     '---',
     `task_id: "${view.task_id}"`,
+    `workspace_path: "${view.workspace_path}"`,
     `phase: "${view.phase}"`,
     `brief: "${view.brief.replace(/"/g, '\\"')}"`,
     `created_at: "${view.created_at}"`,
