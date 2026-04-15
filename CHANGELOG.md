@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.6.0] - 2026-04-15
+
+- feat(compiler): collector agent for episodic research (E9-B02) (#24) (d63e6ad)
+
+
 ## [v0.5.1] - 2026-04-15
 
 - chore(ci): replace retired npm audit endpoint with OSV scanner (#25) (5de3267)
