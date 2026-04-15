@@ -227,7 +227,7 @@ describe('critiqueFindings — happy path', () => {
     const transitions = readTraces(env.db, { eventType: 'task.transition' });
     if (!transitions.ok) throw transitions.error;
     // created→collecting + collecting→synthesizing (seed) + synthesizing→critiquing.
-    expect(transitions.value.length).toBeGreaterThanOrEqual(3);
+    expect(transitions.value).toHaveLength(3);
   });
 
   it('honors model and maxTokens overrides', async () => {
