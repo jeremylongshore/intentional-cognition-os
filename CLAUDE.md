@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Runtime**: TypeScript, Node.js 22+, pnpm 10.x
 - **CLI**: `ico`
 - **License**: MIT
-- **Current state** (v0.8.0): Epics 1–8 complete; Epic 9 in progress — 5 of 12 beads shipped (B01 Research Task Creation, B02 Collector, B03 Summarizer, B04 Skeptic, B05 Integrator). 942 tests passing. Next bead: E9-B06 (Research Orchestrator) — wires the four agents into a state machine with `--step` mode, `ICO_MAX_RESEARCH_TOKENS` budget, recoverable failure states, and the L3→L4 render handoff.
+- **Current state** (v0.9.0): Epics 1–8 complete; Epic 9 in progress — 5 of 12 beads shipped (B01 Research Task Creation, B02 Collector, B03 Summarizer, B04 Skeptic, B05 Integrator). 942 tests passing. Next bead: E9-B06 (Research Orchestrator) — wires the four agents into a state machine with `--step` mode, `ICO_MAX_RESEARCH_TOKENS` budget, recoverable failure states, and the L3→L4 render handoff.
 
 ## Current State
 
@@ -76,8 +76,7 @@ All standards are frozen for Phase 1. Changes require an `IDEA-CHANGELOG.md` ent
 |---------|---------|-------|
 | CLI | Commander.js | Entry point at `packages/cli/src/index.ts` |
 | State DB | better-sqlite3 | Local SQLite for deterministic state |
-| AI | @anthropic-ai/sdk | Claude API for compilation/reasoning |
-| Orchestration | claude_agent_sdk | Multi-agent research (not yet installed — planned for Epic 9) |
+| AI | @anthropic-ai/sdk | Claude API for compilation/reasoning. The four Epic 9 agents (collector/summarizer/skeptic/integrator) are built directly on the `ClaudeClient` interface in `compiler/src/api/claude-client.ts` — no separate agent SDK. The earlier plan to use `claude_agent_sdk` was dropped: hand-rolling on `ClaudeClient` kept agents Result-typed, deterministically testable with `vi.fn()` mocks, and consistent with existing compiler passes. Reuse this pattern for E9-B06 (Orchestrator). |
 | Validation | Zod | Runtime schema checking |
 | Frontmatter | gray-matter | Parsing compiled wiki pages |
 | PDF | pdf-parse | PDF text extraction in ingest adapter |
