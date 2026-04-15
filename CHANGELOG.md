@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.8.0] - 2026-04-15
+
+- feat(compiler): skeptic agent for episodic research (E9-B04) (#27) (b8ac4aa)
+
+
 ## [v0.7.0] - 2026-04-15
 
 - feat(compiler): summarizer agent for episodic research (E9-B03) (#26) (a3d020d)
