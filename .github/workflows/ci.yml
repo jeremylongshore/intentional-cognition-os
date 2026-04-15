@@ -61,25 +61,24 @@ jobs:
   audit:
     name: Security Audit
     runs-on: ubuntu-latest
+    # OSV Scanner replaces `pnpm audit`, which stopped working on 2026-04-15
+    # when npm retired https://registry.npmjs.org/-/npm/v1/security/audits
+    # (HTTP 410). OSV.dev is Google-run, free, and reads pnpm-lock.yaml
+    # directly — no repo-level settings or third-party endpoints.
+    # Fails on HIGH/CRITICAL vulnerabilities.
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: OSV Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.0.0
         with:
-          node-version: "22"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Audit dependencies
-        run: pnpm audit --prod --audit-level=high
+          scan-args: |-
+            --lockfile=./pnpm-lock.yaml
+            --fail-on-vuln
+            --min-severity=HIGH
 
       - name: Check for committed .env files
+        if: always()
         run: |
           leaked_files=$(find . -path '*/node_modules' -prune -o -name '.env*' -print | grep -v '.env.example$' || true)
           if [ -n "$leaked_files" ]; then
