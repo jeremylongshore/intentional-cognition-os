@@ -120,3 +120,8 @@ export {
   type SkepticOptions,
   type SkepticResult,
 } from './agents/skeptic.js';
+export {
+  integrateFindings,
+  type IntegratorOptions,
+  type IntegratorResult,
+} from './agents/integrator.js';
