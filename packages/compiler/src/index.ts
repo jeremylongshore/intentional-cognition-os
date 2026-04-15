@@ -103,3 +103,9 @@ export {
   type TaskOutput,
   type TaskOutputSource,
 } from './render/task-renderer.js';
+export {
+  collectEvidence,
+  type CollectorOptions,
+  type CollectorResult,
+  type EvidenceFile,
+} from './agents/collector.js';
