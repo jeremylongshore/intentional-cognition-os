@@ -115,3 +115,8 @@ export {
   type SummarizerOptions,
   type SummarizerResult,
 } from './agents/summarizer.js';
+export {
+  critiqueFindings,
+  type SkepticOptions,
+  type SkepticResult,
+} from './agents/skeptic.js';
