@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.9.0] - 2026-04-15
+
+- feat(compiler): integrator agent for episodic research (E9-B05) (#28) (1e5811a)
+
+
 ## [v0.8.0] - 2026-04-15
 
 - feat(compiler): skeptic agent for episodic research (E9-B04) (#27) (b8ac4aa)
