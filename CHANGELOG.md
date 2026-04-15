@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.9.2] - 2026-04-15
+
+- build(deps-dev): Bump @types/node from 25.5.2 to 25.6.0 (#22) (7119fb4)
+- build(deps-dev): Bump globals from 17.4.0 to 17.5.0 (#17) (73ffaa5)
+- build(deps): Bump actions/checkout from 4 to 6 (#14) (f1fa055)
+- build(deps): Bump actions/setup-node from 4 to 6 (#12) (3f4f0d5)
+
+
 ## [v0.9.1] - 2026-04-15
 
 - docs(claude): refresh project state and lock in agent conventions (921ec77)
