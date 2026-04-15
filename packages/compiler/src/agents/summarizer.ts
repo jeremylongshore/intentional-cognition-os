@@ -171,9 +171,11 @@ function parseEvidenceFrontmatter(content: string): { fm: Record<string, string>
     if (key === '') continue;
     let value = line.slice(colonIdx + 1).trim();
     // Strip JSON-style quoting that the Collector writes via JSON.stringify.
+    // Using String() coerces any numeric/boolean scalars quoted in the
+    // frontmatter to strings so `fm` remains Record<string, string> as typed.
     if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
       try {
-        value = JSON.parse(value) as string;
+        value = String(JSON.parse(value));
       } catch {
         // Fall through with the raw value.
       }

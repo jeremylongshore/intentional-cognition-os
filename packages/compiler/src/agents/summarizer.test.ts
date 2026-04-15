@@ -270,6 +270,55 @@ describe('summarizeEvidence — happy path', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Frontmatter parsing safety
+// ---------------------------------------------------------------------------
+
+describe('summarizeEvidence — frontmatter robustness', () => {
+  it('coerces quoted-numeric frontmatter values to strings without type confusion', async () => {
+    // Collector writes titles via JSON.stringify, so `"123"` is a valid
+    // serialization of the string "123". When parsing we must coerce the
+    // result to a string — a naive `as string` cast would let a number
+    // leak into the Record<string,string> map.
+    const task = seedTaskWithEvidence(env, 'Brief', []);
+    const evidenceDir = resolve(env.wsRoot, task.workspacePath, 'evidence');
+
+    writeFileSync(
+      join(evidenceDir, '01.md'),
+      [
+        '---',
+        `task_id: ${task.id}`,
+        'source_path: concepts/numeric-title.md',
+        'source_title: "123"', // valid JSON — parses to number 123
+        'source_type: concept',
+        'rank: -1.0',
+        'truncated: false',
+        '---',
+        '',
+        'Body with marker NUMERIC_BODY.',
+        '',
+      ].join('\n'),
+      'utf-8',
+    );
+
+    const client = mockClient('synthesis about NUMERIC_BODY');
+    const result = await summarizeEvidence(env.db, env.wsRoot, task.id, client);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    // The coerced title must be a string in the result — not a number.
+    const source = result.value.evidenceSources[0]!;
+    expect(source.sourceTitle).toBe('123');
+    expect(typeof source.sourceTitle).toBe('string');
+
+    // The user prompt must also receive a string attribute, not `123`
+    // rendered as a number via string interpolation (same output, but we
+    // verify the evidence block is well-formed XML-ish).
+    const userPrompt = client.spy.mock.calls[0]![1] as string;
+    expect(userPrompt).toContain('source_title="123"');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Error paths
 // ---------------------------------------------------------------------------
 
