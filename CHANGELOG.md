@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.5.1] - 2026-04-15
+
+- chore(ci): replace retired npm audit endpoint with OSV scanner (#25) (5de3267)
+
+
 ## [v0.5.0] - 2026-04-09
 
 - feat(kernel): cognitive procfs + CWP adversarial review (#11) (8e1e080)
