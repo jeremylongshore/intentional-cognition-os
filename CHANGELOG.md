@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.7.0] - 2026-04-15
+
+- feat(compiler): summarizer agent for episodic research (E9-B03) (#26) (a3d020d)
+
+
 ## [v0.6.0] - 2026-04-15
 
 - feat(compiler): collector agent for episodic research (E9-B02) (#24) (d63e6ad)
