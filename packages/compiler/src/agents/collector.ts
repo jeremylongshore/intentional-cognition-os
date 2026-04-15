@@ -153,11 +153,14 @@ function composeEvidenceFile(
   collectedAt: string,
   truncated: boolean,
 ): string {
+  // YAML-safe quoting via JSON.stringify handles all special chars (quotes,
+  // colons, backslashes, leading whitespace) — JSON string syntax is a strict
+  // subset of YAML 1.2 flow scalar syntax.
   const fm = [
     '---',
     `task_id: ${taskId}`,
     `source_path: ${result.path}`,
-    `source_title: ${result.title.replace(/"/g, "'")}`,
+    `source_title: ${JSON.stringify(result.title)}`,
     `source_type: ${result.type}`,
     `rank: ${result.rank}`,
     `collected_at: ${collectedAt}`,

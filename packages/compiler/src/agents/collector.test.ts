@@ -201,7 +201,7 @@ describe('collectEvidence — happy path', () => {
     const content = readFileSync(absPath, 'utf-8');
     expect(content).toContain('task_id: ' + task.id);
     expect(content).toContain('source_path: concepts/rust-ownership.md');
-    expect(content).toContain('source_title: Rust Ownership');
+    expect(content).toContain('source_title: "Rust Ownership"');
     expect(content).toContain('source_type: concept');
     expect(content).toContain('Rust ownership enforces memory safety');
   });
@@ -228,6 +228,33 @@ describe('collectEvidence — happy path', () => {
     const after = getTask(env.db, task.id);
     if (!after.ok) throw after.error;
     expect(after.value?.status).toBe('collecting');
+  });
+
+  it('quotes source titles containing YAML-special characters (colons, quotes, backslashes)', () => {
+    writeWikiPage(env.wsRoot, 'concepts', 'tricky', {
+      // Title contains a colon (would split YAML mapping), an embedded double
+      // quote, and a backslash. JSON.stringify must produce a valid YAML
+      // scalar that round-trips through any compliant YAML parser.
+      title: 'Self-Attention: A "Primer" \\ Notes',
+      type: 'concept',
+      body: 'Body discussing trickytopic in detail.',
+    });
+
+    const idx = indexCompiledPages(env.db, env.wsRoot);
+    if (!idx.ok) throw idx.error;
+
+    const task = createTaskWithBrief(env.db, env.wsRoot, 'trickytopic');
+
+    const result = collectEvidence(env.db, env.wsRoot, task.id);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const file = result.value.evidenceFiles[0]!;
+    const content = readFileSync(resolve(env.wsRoot, file.path), 'utf-8');
+
+    // The title appears as a JSON-escaped YAML flow scalar — colons are inside
+    // the quoted string so YAML parsers won't mis-parse the line as a mapping.
+    expect(content).toContain('source_title: "Self-Attention: A \\"Primer\\" \\\\ Notes"');
   });
 
   it('orders evidence files by rank with zero-padded numeric prefix', () => {
