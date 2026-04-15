@@ -1,9 +1,14 @@
 # Gemini AI Code Review
 #
-# Wild ecosystem template — uses the shared wild-ecosystem GCP project.
-# Requires these GitHub repo variables (set by /gemini-pr-review skill):
-#   WIF_PROVIDER, WIF_SERVICE_ACCOUNT, GCP_PROJECT_ID,
-#   GOOGLE_CLOUD_LOCATION, GOOGLE_GENAI_USE_VERTEXAI
+# Hybrid configuration:
+# - GCP auth via the wild ecosystem shared project (WIF_PROVIDER, WIF_SERVICE_ACCOUNT,
+#   GCP_PROJECT_ID variables point at wild-ecosystem to share billing).
+# - GitHub MCP server runs in-job to provide the pull_request_read / review_write tools
+#   that the wild bare-template lacks. Without this MCP server the tool names in
+#   `includeTools` are unbound and Gemini can read context but cannot post a review.
+#
+# This is the working pattern for repos that want auto-review on every PR while
+# still benefiting from the wild ecosystem's billed GCP project.
 
 name: Gemini Code Review
 
@@ -17,15 +22,21 @@ permissions:
   pull-requests: write
   id-token: write   # Required for WIF
 
+concurrency:
+  group: gemini-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   gemini-review:
     runs-on: ubuntu-latest
+    timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: google-github-actions/run-gemini-cli@v0
+      - name: Gemini PR Review
+        uses: google-github-actions/run-gemini-cli@v0
         env:
           GITHUB_TOKEN: ${{ github.token }}
           ISSUE_TITLE: ${{ github.event.pull_request.title }}
@@ -39,15 +50,32 @@ jobs:
           gcp_location: ${{ vars.GOOGLE_CLOUD_LOCATION }}
           use_vertex_ai: ${{ vars.GOOGLE_GENAI_USE_VERTEXAI }}
           gemini_model: gemini-2.5-pro
+          workflow_name: gemini-review
           prompt: /gemini-review
-          settings: |
+          settings: |-
             {
+              "model": {
+                "maxSessionTurns": 25
+              },
+              "mcpServers": {
+                "github": {
+                  "command": "docker",
+                  "args": [
+                    "run", "-i", "--rm",
+                    "-e", "GITHUB_PERSONAL_ACCESS_TOKEN",
+                    "ghcr.io/github/github-mcp-server:v0.27.0"
+                  ],
+                  "includeTools": [
+                    "add_comment_to_pending_review",
+                    "pull_request_read",
+                    "pull_request_review_write"
+                  ],
+                  "env": {
+                    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+                  }
+                }
+              },
               "tools": {
-                "includeTools": [
-                  "add_comment_to_pending_review",
-                  "pull_request_read",
-                  "pull_request_review_write"
-                ],
                 "core": [
                   "run_shell_command(cat)",
                   "run_shell_command(echo)",
