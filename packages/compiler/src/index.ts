@@ -109,3 +109,9 @@ export {
   type CollectorResult,
   type EvidenceFile,
 } from './agents/collector.js';
+export {
+  summarizeEvidence,
+  type EvidenceSource,
+  type SummarizerOptions,
+  type SummarizerResult,
+} from './agents/summarizer.js';
