@@ -43,16 +43,36 @@ export interface TaskRecord {
 // ---------------------------------------------------------------------------
 
 /**
- * Maps each status to the single valid next status.
- * `VALID_TRANSITIONS[current] === target` is the sole legality check.
+ * Maps each status to the set of valid next statuses.
+ *
+ * Happy path (one successor): created → collecting → synthesizing →
+ * critiquing → rendering → completed → archived.
+ *
+ * Failure branches (E9-B06): each forward edge has a sibling `failed_*`
+ * edge that the orchestrator takes when an agent returns err(...) during
+ * its stage. A failure state maps back to the state it came from, so the
+ * operator can re-run just the failed stage without re-doing earlier work:
+ *
+ *   created          → collecting | failed_collecting
+ *   collecting       → synthesizing | failed_synthesizing
+ *   synthesizing     → critiquing | failed_critiquing
+ *   critiquing       → rendering | failed_rendering
+ *   failed_collecting   → created          (retry collector)
+ *   failed_synthesizing → collecting       (retry summarizer)
+ *   failed_critiquing   → synthesizing     (retry skeptic)
+ *   failed_rendering    → critiquing       (retry integrator)
  */
-const VALID_TRANSITIONS: Record<string, string> = {
-  created: 'collecting',
-  collecting: 'synthesizing',
-  synthesizing: 'critiquing',
-  critiquing: 'rendering',
-  rendering: 'completed',
-  completed: 'archived',
+const VALID_TRANSITIONS: Record<string, readonly string[]> = {
+  created: ['collecting', 'failed_collecting'],
+  collecting: ['synthesizing', 'failed_synthesizing'],
+  synthesizing: ['critiquing', 'failed_critiquing'],
+  critiquing: ['rendering', 'failed_rendering'],
+  rendering: ['completed'],
+  completed: ['archived'],
+  failed_collecting: ['created'],
+  failed_synthesizing: ['collecting'],
+  failed_critiquing: ['synthesizing'],
+  failed_rendering: ['critiquing'],
 };
 
 /**
@@ -185,12 +205,17 @@ export function transitionTask(
     }
 
     const currentStatus = existing.status;
+    const allowed = VALID_TRANSITIONS[currentStatus];
 
-    if (VALID_TRANSITIONS[currentStatus] !== targetStatus) {
+    if (allowed === undefined || !allowed.includes(targetStatus)) {
+      const expected =
+        allowed === undefined || allowed.length === 0
+          ? '(terminal)'
+          : allowed.join(' | ');
       return err(
         new Error(
           `Invalid transition: '${currentStatus}' → '${targetStatus}'. ` +
-          `Expected next status: '${VALID_TRANSITIONS[currentStatus] ?? '(terminal)'}'.`,
+          `Expected next status: '${expected}'.`,
         ),
       );
     }

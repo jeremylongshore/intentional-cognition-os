@@ -125,3 +125,12 @@ export {
   type IntegratorOptions,
   type IntegratorResult,
 } from './agents/integrator.js';
+export {
+  executeResearch,
+  type OrchestratorOptions,
+  type OrchestratorOutcome,
+  type OrchestratorPausedResult,
+  type OrchestratorResult,
+  type Stage,
+  type StepConfirmation,
+} from './agents/orchestrator.js';

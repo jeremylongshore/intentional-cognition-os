@@ -143,6 +143,77 @@ describe('transitionTask — invalid transitions', () => {
 });
 
 // ---------------------------------------------------------------------------
+// transitionTask — failure branches (E9-B06)
+//
+// Each forward stage has a sibling `failed_*` edge and a recovery edge back
+// to the state it came from. This verifies every failure/recovery pair and
+// also that failure states do not allow skipping forward.
+// ---------------------------------------------------------------------------
+
+describe('transitionTask — failure branches', () => {
+  const cases: ReadonlyArray<{
+    path: readonly TaskRecord['status'][];
+    failureState: TaskRecord['status'];
+    recoveryTarget: TaskRecord['status'];
+  }> = [
+    { path: [], failureState: 'failed_collecting', recoveryTarget: 'created' },
+    { path: ['collecting'], failureState: 'failed_synthesizing', recoveryTarget: 'collecting' },
+    {
+      path: ['collecting', 'synthesizing'],
+      failureState: 'failed_critiquing',
+      recoveryTarget: 'synthesizing',
+    },
+    {
+      path: ['collecting', 'synthesizing', 'critiquing'],
+      failureState: 'failed_rendering',
+      recoveryTarget: 'critiquing',
+    },
+  ] as const;
+
+  for (const { path, failureState, recoveryTarget } of cases) {
+    it(`transitions ${recoveryTarget} → ${failureState} → ${recoveryTarget}`, () => {
+      const cr = createTask(db, workspacePath, `Failure branch: ${failureState}`);
+      expect(cr.ok).toBe(true);
+      if (!cr.ok) return;
+      const taskId = cr.value.id;
+
+      // Advance to the state that precedes the failure.
+      for (const s of path) {
+        const r = transitionTask(db, workspacePath, taskId, s);
+        expect(r.ok).toBe(true);
+      }
+
+      // Forward edge to the failure state.
+      const failR = transitionTask(db, workspacePath, taskId, failureState);
+      expect(failR.ok).toBe(true);
+      if (!failR.ok) return;
+      expect(failR.value.status).toBe(failureState);
+
+      // Recovery edge back to the predecessor state.
+      const recoverR = transitionTask(db, workspacePath, taskId, recoveryTarget);
+      expect(recoverR.ok).toBe(true);
+      if (!recoverR.ok) return;
+      expect(recoverR.value.status).toBe(recoveryTarget);
+    });
+  }
+
+  it('rejects skipping forward from a failure state (failed_collecting → synthesizing)', () => {
+    const cr = createTask(db, workspacePath, 'Failure skip test');
+    expect(cr.ok).toBe(true);
+    if (!cr.ok) return;
+    const taskId = cr.value.id;
+
+    const failR = transitionTask(db, workspacePath, taskId, 'failed_collecting');
+    expect(failR.ok).toBe(true);
+
+    const skipR = transitionTask(db, workspacePath, taskId, 'synthesizing');
+    expect(skipR.ok).toBe(false);
+    if (skipR.ok) return;
+    expect(skipR.error.message).toMatch(/invalid transition/i);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // transitionTask — timestamp side-effects
 // ---------------------------------------------------------------------------
 
