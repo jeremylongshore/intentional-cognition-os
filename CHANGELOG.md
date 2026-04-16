@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.10.0] - 2026-04-16
+
+- feat(compiler): research orchestrator (E9-B06) (#29) (20132e0)
+
+
 ## [v0.9.3] - 2026-04-15
 
 - build(deps-dev): Bump typescript-eslint from 8.58.0 to 8.58.1 (#23) (6b3a657)
