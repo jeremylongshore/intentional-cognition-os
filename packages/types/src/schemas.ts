@@ -52,6 +52,15 @@ export const TaskStatusSchema = z.enum([
   'rendering',
   'completed',
   'archived',
+  // Recoverable failure states (E9-B06). Emitted by the research orchestrator
+  // when an agent returns err(...) during its stage. Each failure state has a
+  // single recovery transition back to the state that preceded the failed
+  // stage, so an operator (or a later `ico research --retry`) can re-run just
+  // that stage without losing work from earlier stages.
+  'failed_collecting',
+  'failed_synthesizing',
+  'failed_critiquing',
+  'failed_rendering',
 ]);
 
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
