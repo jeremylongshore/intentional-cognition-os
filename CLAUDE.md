@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Runtime**: TypeScript, Node.js 22+, pnpm 10.x
 - **CLI**: `ico`
 - **License**: MIT
-- **Current state** (v0.9.0): Epics 1–8 complete; Epic 9 in progress — 5 of 12 beads shipped (B01 Research Task Creation, B02 Collector, B03 Summarizer, B04 Skeptic, B05 Integrator). 942 tests passing. Next bead: E9-B06 (Research Orchestrator) — wires the four agents into a state machine with `--step` mode, `ICO_MAX_RESEARCH_TOKENS` budget, recoverable failure states, and the L3→L4 render handoff.
+- **Current state** (v0.9.3): Epics 1–8 complete; Epic 9 in progress — 6 of 12 beads shipped (B01 Research Task Creation, B02 Collector, B03 Summarizer, B04 Skeptic, B05 Integrator, B06 Orchestrator). 958 tests passing. Next bead: E9-B07 (Research Task Archival) — `archiveTask()` transitions completed → archived, preserves full task directory, CLI subcommand `ico research archive <taskId>`.
 
 ## Current State
 
@@ -35,7 +35,7 @@ pnpm test:coverage                                      # Coverage report
 |---------|--------|-------------|
 | `packages/types/` | Complete | Shared TypeScript interfaces, Result<T,E>, Zod schemas, frontmatter schemas |
 | `packages/kernel/` | Complete | Workspace init, SQLite state, mounts, sources, provenance, traces, tasks, wiki index, audit log, FTS5 search, promotion engine, unpromote |
-| `packages/compiler/` | Complete + 4 agents | 6 compiler passes, Claude API client, ingest adapters (PDF/MD/web-clip), ask pipeline, report & slide renderers, token tracking, staleness detection. **agents/**: collector, summarizer, skeptic, integrator (Epic 9 stages 1–4) |
+| `packages/compiler/` | Complete + 5 agents | 6 compiler passes, Claude API client, ingest adapters (PDF/MD/web-clip), ask pipeline, report & slide renderers, token tracking, staleness detection. **agents/**: collector, summarizer, skeptic, integrator, orchestrator (Epic 9 stages 1–5) |
 | `packages/cli/` | Complete | 14 commands (init, mount, ingest, compile, ask, render, lint, promote, unpromote, status, inspect, eval + stubs: research, recall) |
 | `evals/` | Not started | Evaluation specs (Epic 10) |
 

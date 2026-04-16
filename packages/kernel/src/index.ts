@@ -31,6 +31,9 @@ export { writeTrace, readTraces, type TraceRecord } from './traces.js';
 // Tasks
 export { createTask, transitionTask, getTask, listTasks, type TaskRecord } from './tasks.js';
 
+// Archive
+export { archiveTask, type ArchiveResult } from './archive.js';
+
 // Wiki
 export { rebuildWikiIndex } from './wiki-index.js';
 
