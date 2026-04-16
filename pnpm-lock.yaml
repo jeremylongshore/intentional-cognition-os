@@ -58,8 +58,8 @@ importers:
   packages/compiler:
     dependencies:
       '@anthropic-ai/sdk':
-        specifier: ^0.82.0
-        version: 0.82.0(zod@3.25.76)
+        specifier: ^0.89.0
+        version: 0.89.0(zod@3.25.76)
       '@ico/kernel':
         specifier: workspace:*
         version: link:../kernel
@@ -135,8 +135,8 @@ importers:
 
 packages:
 
-  '@anthropic-ai/sdk@0.82.0':
-    resolution: {integrity: sha512-xdHTjL1GlUlDugHq/I47qdOKp/ROPvuHl7ROJCgUQigbvPu7asf9KcAcU1EqdrP2LuVhEKaTs7Z+ShpZDRzHdQ==}
+  '@anthropic-ai/sdk@0.89.0':
+    resolution: {integrity: sha512-nyGau0zex62EpU91hsHa0zod973YEoiMgzWZ9hC55WdiOLrE4AGpcg4wXI7lFqtvMLqMcLfewQU9sHgQB6psow==}
     hasBin: true
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
@@ -1511,7 +1511,7 @@ packages:
 
 snapshots:
 
-  '@anthropic-ai/sdk@0.82.0(zod@3.25.76)':
+  '@anthropic-ai/sdk@0.89.0(zod@3.25.76)':
     dependencies:
       json-schema-to-ts: 3.1.1
     optionalDependencies:
