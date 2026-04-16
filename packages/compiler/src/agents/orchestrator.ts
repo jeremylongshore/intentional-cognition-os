@@ -370,7 +370,6 @@ export async function executeResearch(
       workspacePath,
       taskId,
       options,
-      workspacePath,
     );
 
     if (!stageResult.ok) {
@@ -499,7 +498,6 @@ async function runStage(
   workspacePath: string,
   taskId: string,
   options: OrchestratorOptions,
-  reportWorkspacePath: string,
 ): Promise<Result<StageRunResult, Error>> {
   switch (stage) {
     case 'collect': {
@@ -553,7 +551,7 @@ async function runStage(
       });
     }
     case 'render': {
-      return runRenderStage(db, workspacePath, taskId, options, reportWorkspacePath);
+      return runRenderStage(db, workspacePath, taskId, options);
     }
   }
 }
@@ -568,7 +566,6 @@ async function runRenderStage(
   workspacePath: string,
   taskId: string,
   options: OrchestratorOptions,
-  reportWorkspacePath: string,
 ): Promise<Result<StageRunResult, Error>> {
   // Resolve the task's workspace dir inside workspace/tasks/<dir>.
   const taskRead = getTask(db, taskId);
@@ -591,7 +588,7 @@ async function runRenderStage(
   };
 
   const rendered = await renderReport(
-    reportWorkspacePath,
+    workspacePath,
     outputs.value.sources.map((s) => ({
       title: s.title,
       content: s.content,
@@ -607,7 +604,7 @@ async function runRenderStage(
 
   const tokensUsed = rendered.value.inputTokens + rendered.value.outputTokens;
 
-  // Normalise the report path to a workspace-relative string when possible.
+  // Normalize the report path to a workspace-relative string when possible.
   const abs = rendered.value.outputPath;
   const rel = abs.startsWith(workspacePath)
     ? abs.slice(workspacePath.length).replace(/^\/+/, '')
