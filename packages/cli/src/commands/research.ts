@@ -1,9 +1,8 @@
 /**
- * `ico research <brief>` — Create a scoped research task workspace (E9-B01).
+ * `ico research` command group (E9-B01 + E9-B07).
  *
- * Creates an episodic task workspace with subdirectories for evidence, notes,
- * drafts, critique, and output. Writes a `brief.md` file with YAML frontmatter,
- * registers the task in SQLite, writes a trace event, and appends an audit log entry.
+ * - `ico research <brief>` — Create a scoped research task workspace.
+ * - `ico research archive <taskId>` — Archive a completed research task.
  *
  * @module commands/research
  */
@@ -15,6 +14,7 @@ import type { Command } from 'commander';
 
 import {
   appendAuditLog,
+  archiveTask,
   closeDatabase,
   createTask,
   initDatabase,
@@ -40,6 +40,13 @@ export interface ResearchResult {
   status: string;
   workspacePath: string;
   createdAt: string;
+}
+
+export interface ResearchArchiveResult {
+  taskId: string;
+  status: 'archived';
+  archivedAt: string;
+  workspacePath: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -119,18 +126,106 @@ export function runResearch(
 }
 
 // ---------------------------------------------------------------------------
+// Archive logic (exported for testing)
+// ---------------------------------------------------------------------------
+
+/**
+ * Archive a completed research task.
+ *
+ * @param taskId     - UUID of the task to archive.
+ * @param globalOpts - Global CLI flags (json, verbose, workspace).
+ */
+export function runArchive(
+  taskId: string,
+  globalOpts: GlobalOptions,
+): { ok: true; value: ResearchArchiveResult } | { ok: false; error: Error } {
+  const wsResolveOpts =
+    globalOpts.workspace !== undefined ? { workspace: globalOpts.workspace } : {};
+  const wsResult = resolveWorkspace(wsResolveOpts);
+  if (!wsResult.ok) {
+    return { ok: false, error: wsResult.error };
+  }
+  const { root: wsRoot, dbPath } = wsResult.value;
+
+  const dbResult = initDatabase(dbPath);
+  if (!dbResult.ok) {
+    return { ok: false, error: dbResult.error };
+  }
+  const db = dbResult.value;
+
+  try {
+    const archiveResult = archiveTask(db, wsRoot, taskId);
+    if (!archiveResult.ok) {
+      return { ok: false, error: archiveResult.error };
+    }
+
+    const result: ResearchArchiveResult = {
+      taskId: archiveResult.value.taskId,
+      status: 'archived',
+      archivedAt: archiveResult.value.archivedAt,
+      workspacePath: archiveResult.value.workspacePath,
+    };
+
+    if (globalOpts.json === true) {
+      process.stdout.write(formatJSON(result) + '\n');
+    } else {
+      process.stdout.write('\n');
+      process.stdout.write(formatSuccess(`Research task archived`) + '\n');
+      process.stdout.write(formatInfo(`  Task ID:   ${taskId}`) + '\n');
+      process.stdout.write(formatInfo(`  Workspace: ${result.workspacePath}`) + '\n');
+      process.stdout.write(formatInfo(`  Status:    archived`) + '\n');
+      process.stdout.write('\n');
+    }
+
+    return { ok: true, value: result };
+  } finally {
+    closeDatabase(db);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Commander registration
 // ---------------------------------------------------------------------------
 
 /**
- * Register `ico research <brief>` on the root Commander program.
+ * Register `ico research <brief>` and `ico research archive <taskId>` on the
+ * root Commander program.
  *
- * @param program - The root Commander `Command` instance.
+ * Commander processes subcommands before the default argument, so
+ * `ico research archive <id>` routes to the archive handler while
+ * `ico research "some brief"` routes to the create handler.
  */
 export function register(program: Command): void {
-  program
-    .command('research <brief>')
-    .description('Start a multi-agent research task with an episodic workspace')
+  const research = program
+    .command('research')
+    .description('Research task management');
+
+  // Subcommand: archive
+  research
+    .command('archive <taskId>')
+    .description('Archive a completed research task (preserves all files)')
+    .addHelpText(
+      'after',
+      '\nExamples:\n  $ ico research archive 550e8400-e29b-41d4-a716-446655440000\n  $ ico research archive 550e8400-e29b-41d4-a716-446655440000 --json',
+    )
+    .action((taskId: string, _opts: Record<string, unknown>, cmd: Command) => {
+      const globalOpts = cmd.optsWithGlobals<GlobalOptions>();
+      const global: GlobalOptions = {
+        ...(globalOpts.json !== undefined && { json: globalOpts.json }),
+        ...(globalOpts.verbose !== undefined && { verbose: globalOpts.verbose }),
+        ...(globalOpts.workspace !== undefined && { workspace: globalOpts.workspace }),
+      };
+
+      const result = runArchive(taskId, global);
+      if (!result.ok) {
+        process.stderr.write(formatError(result.error.message) + '\n');
+        process.exit(1);
+      }
+    });
+
+  // Default: create task (backward-compatible `ico research <brief>`)
+  research
+    .argument('<brief>')
     .addHelpText(
       'after',
       '\nExamples:\n  $ ico research "How does self-attention scale with sequence length?"\n  $ ico research "Compare transformer architectures" --json',
