@@ -118,10 +118,11 @@ This is the most important architectural constraint. The model proposes; the det
 - **Secret redaction**: All trace payloads run through `redactSecrets()` before writing
 - **FTS5 search**: Full-text search over compiled wiki pages
 - **Promotion rules**: 7 validation rules + 3 anti-pattern detectors gate L4→L2 promotion
+- **Task state machine**: `VALID_TRANSITIONS` is `Record<string, readonly string[]>` — each forward-progress status has a success edge and a sibling failure edge (e.g. `created → [collecting, failed_collecting]`). Failure states have single recovery edges back to their predecessor. Migration 003 expanded the SQLite CHECK constraint to match.
 
 ### Multi-Agent Research Pattern (Epic 9)
 
-For `ico research`, the system creates a scoped episodic task workspace and runs four agents in sequence, each transitioning the task state machine forward:
+For `ico research`, the system creates a scoped episodic task workspace and runs five agents via `executeResearch()` in `agents/orchestrator.ts`:
 
 | Stage | Agent | Module | Reads | Writes | Transition |
 |-------|-------|--------|-------|--------|-----------|
@@ -129,8 +130,19 @@ For `ico research`, the system creates a scoped episodic task workspace and runs
 | 2 | Summarizer | `agents/summarizer.ts` (Claude) | brief + `evidence/` | `notes/synthesis.md` (one consolidated file) | `collecting → synthesizing` |
 | 3 | Skeptic | `agents/skeptic.ts` (Claude, adversarial) | brief + `notes/synthesis.md` | `critique/critique.md` (4 fixed sections: Weak Evidence / Unsupported Claims / Missing Perspectives / Logical Gaps) | `synthesizing → critiquing` |
 | 4 | Integrator | `agents/integrator.ts` (Claude) | brief + notes + critique | `output/final.md` (must address every critique concern) | `critiquing → rendering` |
+| 5 | Orchestrator | `agents/orchestrator.ts` (render handoff) | `output/final.md` via `gatherTaskOutput` | `outputs/reports/<slug>.md` via `renderReport` | `rendering → completed` |
 
-**Agent module conventions** (lock these in for future agents — consistency matters more than micro-optimisations):
+**Orchestrator features** (E9-B06):
+- Resume-aware: derives starting stage from task's current status. Re-invoke on a partial task to pick up where it left off.
+- `step: true` with optional `confirmStep` hook pauses between stages for operator review.
+- Token budget via `ICO_MAX_RESEARCH_TOKENS` env var (default 200k). Budget exceeded → abort trace, task stays in post-stage status, later run with more headroom resumes.
+- Recoverable failure states: `failed_collecting`, `failed_synthesizing`, `failed_critiquing`, `failed_rendering`. On agent err → transition to failure state. `retry: true` rolls back to predecessor and re-runs.
+- L3→L4 hand-off: render stage calls `gatherTaskOutput` + `renderReport`, then transitions `rendering → completed`. Integrator never touches L4.
+- Trace events: `orchestrator.start / .stage_start / .stage_complete / .retry / .pause / .abort / .complete`.
+
+**Archival** (E9-B07): `archiveTask()` in `kernel/src/archive.ts` transitions `completed → archived`. Directory preserved, not deleted. CLI: `ico research archive <taskId>`.
+
+**Agent module conventions** (lock these in for future agents — consistency matters more than micro-optimizations):
 - Inject `ClaudeClient` rather than constructing internally — tests mock it without touching the SDK.
 - All file writes are atomic via `.tmp` + `renameSync`.
 - All inputs (brief/notes/critique/evidence) wrapped in XML-delimited tags inside the user prompt.
@@ -139,8 +151,6 @@ For `ico research`, the system creates a scoped episodic task workspace and runs
 - Inline citations use `[source: <source-title>]` — same format as `ico ask` (`compiler/src/ask/generate.ts`) so future citation tooling extends to research output.
 - One trace event per agent (e.g. `evidence.collect`, `evidence.synthesize`, `notes.critique`, `notes.integrate`); `transitionTask` emits the `task.transition` trace automatically.
 - On Claude API error, return `err(...)` and leave the task in the prior state — never half-advance.
-
-The L3→L4 hand-off (copying `output/final.md` to `workspace/outputs/`) is **not** done by the Integrator. The Orchestrator (E9-B06, in progress) will trigger the Epic 8 render pipeline for that handoff.
 
 ## Documentation
 
