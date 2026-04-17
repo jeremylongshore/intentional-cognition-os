@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.11.0] - 2026-04-17
+
+- feat(kernel+cli): research task archival (E9-B07) (#30) (a211e3a)
+
+
 ## [v0.10.0] - 2026-04-16
 
 - feat(compiler): research orchestrator (E9-B06) (#29) (20132e0)
