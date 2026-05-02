@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.11.1] - 2026-05-02
+
+- chore(test): install audit-harness v0.1.0 (P6 batch) (#38) (fcd5db8)
+
+
 ## [v0.11.0] - 2026-04-17
 
 - feat(kernel+cli): research task archival (E9-B07) (#30) (a211e3a)
